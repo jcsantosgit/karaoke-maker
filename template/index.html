@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KaraokeFlow AI - MP3 para Vídeo Karaokê</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Configuração do Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        brand: { dark: '#0f172a', purple: '#8b5cf6', pink: '#ec4899', blue: '#3b82f6' }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #05050a; color: #ffffff; overflow-x: hidden; }
+
+        /* Background Glow Effects */
+        .glow-bg {
+            position: absolute; width: 600px; height: 600px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            z-index: -1; pointer-events: none;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #8b5cf6, #ec4899);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        /* Progress Bar Animation */
+        .progress-bar-striped {
+            background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);
+            background-size: 1rem 1rem;
+            animation: progress-bar-stripes 1s linear infinite;
+        }
+        @keyframes progress-bar-stripes { 0% { background-position: 1rem 0; } 100% { background-position: 0 0; } }
+
+        /* View Transitions */
+        .view-section { display: none; opacity: 0; transition: opacity 0.5s ease-in-out; }
+        .view-section.active { display: block; opacity: 1; }
+    </style>
+</head>
+<body class="antialiased selection:bg-brand-purple selection:text-white">
+
+    <!-- Global Background Elements -->
+    <div class="glow-bg top-0 left-0 transform -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="glow-bg bottom-0 right-0 transform translate-x-1/3 translate-y-1/3 bg-brand-blue/20"></div>
+
+    <!-- ========================================= -->
+    <!-- VIEW 1: LANDING PAGE (HOME)               -->
+    <!-- ========================================= -->
+    <section id="view-home" class="view-section active">
+        <!-- Navbar -->
+        <nav class="fixed w-full z-50 transition-all duration-300 backdrop-blur-md border-b border-white/5 bg-black/50" id="navbar">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-20">
+                    <div class="flex items-center gap-2 cursor-pointer" onclick="navigateTo('home')">
+                        <i class="fa-solid fa-microphone-lines text-2xl text-brand-purple"></i>
+                        <span class="font-bold text-2xl tracking-tight">Karaoke<span class="text-brand-purple">Flow</span></span>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="ml-10 flex items-baseline space-x-8">
+                            <a href="#how-it-works" class="hover:text-brand-purple transition-colors px-3 py-2 text-sm font-medium">Como Funciona</a>
+                            <a href="#features" class="hover:text-brand-purple transition-colors px-3 py-2 text-sm font-medium">Recursos</a>
+                            <a href="#pricing" class="hover:text-brand-purple transition-colors px-3 py-2 text-sm font-medium">Preços</a>
+                            <button onclick="navigateTo('login')" class="bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-full text-sm font-medium transition-all">Entrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero -->
+        <main class="pt-32 pb-16 sm:pt-40 sm:pb-24 lg:pb-32 overflow-hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+                <div class="lg:grid lg:grid-cols-12 lg:gap-16 items-center">
+                    <div class="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left flex flex-col justify-center z-10">
+                        <div class="inline-flex items-center px-3 py-1 rounded-full border border-brand-purple/30 bg-brand-purple/10 text-brand-purple text-xs font-semibold tracking-wide uppercase mb-4 w-fit mx-auto lg:mx-0">
+                            <span class="w-2 h-2 rounded-full bg-brand-purple mr-2 animate-pulse"></span>
+                            Conversão Ultra Rápida
+                        </div>
+                        <h1 class="text-4xl tracking-tight font-extrabold text-white sm:text-5xl md:text-6xl">
+                            De MP3 para Vídeo <span class="text-gradient">Karaokê MP4</span>
+                        </h1>
+                        <p class="mt-3 text-base text-gray-400 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
+                            Nossa IA remove a voz do cantor e cria um vídeo MP4 com a letra sincronizada em instantes.
+                        </p>
+                        <div class="mt-8 flex flex-col sm:flex-row gap-4 sm:justify-center lg:justify-start">
+                            <button onclick="navigateTo('login')" class="px-8 py-3 rounded-full text-white bg-gradient-to-r from-brand-purple to-brand-pink hover:opacity-90 shadow-lg shadow-purple-500/25 transition-all font-bold flex items-center justify-center">
+                                <i class="fa-solid fa-rocket mr-2"></i> Criar Agora
+                            </button>
+                            <a href="#how-it-works" class="px-8 py-3 rounded-full text-white bg-white/5 border border-white/20 hover:bg-white/10 transition-all font-medium flex items-center justify-center">
+                                Saiba Mais
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Visual Mockup -->
+                    <div class="mt-12 lg:mt-0 lg:col-span-6 animate-float">
+                        <div class="relative glass-card rounded-2xl p-4 shadow-2xl border-t border-l border-white/20">
+                            <div class="aspect-video bg-gray-900 rounded-lg flex items-center justify-center relative overflow-hidden border border-gray-700">
+                                <div class="absolute inset-0 bg-gradient-to-br from-purple-900/50 to-black"></div>
+                                <div class="relative z-10 text-center">
+                                    <h3 class="text-2xl font-bold text-white mb-2 tracking-widest animate-pulse">♪ LETRA AQUI ♪</h3>
+                                    <div class="flex justify-center gap-2 mt-4">
+                                        <div class="w-2 h-2 rounded-full bg-white animate-bounce"></div>
+                                        <div class="w-2 h-2 rounded-full bg-white animate-bounce" style="animation-delay: 0.1s"></div>
+                                        <div class="w-2 h-2 rounded-full bg-white animate-bounce" style="animation-delay: 0.2s"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="mt-4 text-sm text-gray-400 font-medium text-center">Preview do Resultado Final</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Stats -->
+        <div class="border-y border-white/5 bg-white/5 backdrop-blur-sm">
+            <div class="max-w-7xl mx-auto px-4 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div><div class="text-3xl font-bold text-white">Rápido</div><div class="text-sm text-gray-400">Conversão Flash</div></div>
+                <div><div class="text-3xl font-bold text-white">MP4</div><div class="text-sm text-gray-400">Vídeo Pronto</div></div>
+                <div><div class="text-3xl font-bold text-white">100%</div><div class="text-sm text-gray-400">Sem Voz</div></div>
+                <div><div class="text-3xl font-bold text-white">4.9/5</div><div class="text-sm text-gray-400">Avaliação</div></div>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <section id="how-it-works" class="py-20 max-w-7xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-brand-purple font-semibold uppercase tracking-wide">Como Funciona</h2>
+                <p class="text-3xl font-extrabold text-white mt-2">MP3 para Karaoke em segundos</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="glass-card p-8 rounded-2xl relative hover:-translate-y-2 transition-transform">
+                    <div class="absolute -top-6 left-8 bg-gray-900 border border-gray-700 text-brand-purple font-bold w-12 h-12 rounded-xl flex items-center justify-center shadow-lg">01</div>
+                    <i class="fa-solid fa-cloud-arrow-up text-4xl text-gray-300 mt-4 mb-4"></i>
+                    <h3 class="text-xl font-bold text-white mb-2">Upload</h3>
+                    <p class="text-gray-400">Envie seu arquivo de áudio MP3 ou WAV.</p>
+                </div>
+                <div class="glass-card p-8 rounded-2xl relative hover:-translate-y-2 transition-transform">
+                    <div class="absolute -top-6 left-8 bg-gray-900 border border-gray-700 text-brand-purple font-bold w-12 h-12 rounded-xl flex items-center justify-center shadow-lg">02</div>
+                    <i class="fa-solid fa-wand-magic-sparkles text-4xl text-brand-purple mt-4 mb-4"></i>
+                    <h3 class="text-xl font-bold text-white mb-2">IA Processa</h3>
+                    <p class="text-gray-400">Separamos a voz e sincronizamos a letra.</p>
+                </div>
+                <div class="glass-card p-8 rounded-2xl relative hover:-translate-y-2 transition-transform">
+                    <div class="absolute -top-6 left-8 bg-gray-900 border border-gray-700 text-brand-purple font-bold w-12 h-12 rounded-xl flex items-center justify-center shadow-lg">03</div>
+                    <i class="fa-solid fa-download text-4xl text-brand-pink mt-4 mb-4"></i>
+                    <h3 class="text-xl font-bold text-white mb-2">Baixar</h3>
+                    <p class="text-gray-400">Seu vídeo MP4 pronto para cantar.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing -->
+        <section id="pricing" class="py-20 max-w-7xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-extrabold text-white">Planos</h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <!-- Free -->
+                <div class="glass-card p-8 rounded-2xl border-t-4 border-gray-500">
+                    <h3 class="text-xl font-semibold text-white">Gratuito</h3>
+                    <div class="mt-4 text-4xl font-extrabold text-white">R$0</div>
+                    <ul class="mt-6 space-y-4 text-sm text-gray-300">
+                        <li><i class="fa-solid fa-check text-green-400 mr-2"></i> 1 Vídeo a cada 2 meses</li>
+                    </ul>
+                    <button onclick="navigateTo('login')" class="mt-8 w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-medium transition-colors">Criar Conta</button>
+                </div>
+                <!-- Avulso -->
+                <div class="glass-card p-8 rounded-2xl border-t-4 border-brand-blue">
+                    <h3 class="text-xl font-semibold text-white">Avulso</h3>
+                    <div class="mt-4 flex items-baseline text-white"><span class="text-4xl font-extrabold">R$3</span><span class="text-gray-400 text-lg ml-1">/vídeo</span></div>
+                    <ul class="mt-6 space-y-4 text-sm text-gray-300">
+                        <li><i class="fa-solid fa-check text-brand-blue mr-2"></i> Sem mensalidade</li>
+                    </ul>
+                    <button onclick="navigateTo('login')" class="mt-8 w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-medium transition-colors">Comprar</button>
+                </div>
+                <!-- Anual -->
+                <div class="glass-card p-8 rounded-2xl border-t-4 border-brand-purple relative transform md:-translate-y-4">
+                    <div class="absolute top-0 right-0 -mt-3 mr-3 px-3 py-1 bg-brand-purple text-white text-xs font-bold rounded-full uppercase">Melhor Valor</div>
+                    <h3 class="text-xl font-semibold text-white">Anual</h3>
+                    <div class="mt-4 flex items-baseline text-white"><span class="text-4xl font-extrabold">R$29,90</span><span class="text-gray-400 text-lg ml-1">/ano</span></div>
+                    <ul class="mt-6 space-y-4 text-sm text-white">
+                        <li><i class="fa-solid fa-check text-brand-purple mr-2"></i> <strong>Ilimitado</strong></li>
+                    </ul>
+                    <button onclick="navigateTo('login')" class="mt-8 w-full bg-gradient-to-r from-brand-purple to-brand-pink hover:opacity-90 text-white py-2 rounded-lg font-medium shadow-lg">Assinar</button>
+                </div>
+            </div>
+        </section>
+
+        <footer class="border-t border-white/10 bg-black/50 py-8 text-center text-sm text-gray-500">
+            <p>&copy; 2023 KaraokeFlow AI. Todos os direitos reservados.</p>
+        </footer>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- VIEW 2: LOGIN PAGE                        -->
+    <!-- ========================================= -->
+    <section id="view-login" class="view-section h-screen flex items-center justify-center relative">
+        <div class="w-full max-w-md px-4 z-10">
+            <div class="text-center mb-8">
+                <div onclick="navigateTo('home')" class="inline-flex items-center gap-2 mb-4 cursor-pointer hover:opacity-80">
+                    <i class="fa-solid fa-microphone-lines text-3xl text-brand-purple"></i>
+                    <span class="font-bold text-3xl tracking-tight">Karaoke<span class="text-brand-purple">Flow</span></span>
+                </div>
+                <h2 class="text-xl text-gray-400">Acesse sua conta</h2>
+            </div>
+
+            <div class="glass-card p-8 rounded-2xl shadow-2xl">
+                <form onsubmit="handleLogin(event)" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                        <input type="email" class="w-full bg-black/40 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-brand-purple focus:outline-none focus:ring-1 focus:ring-brand-purple" placeholder="seu@email.com" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Senha</label>
+                        <input type="password" class="w-full bg-black/40 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-brand-purple focus:outline-none focus:ring-1 focus:ring-brand-purple" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="w-full bg-gradient-to-r from-brand-purple to-brand-pink hover:opacity-90 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-purple-500/25 transition-all">
+                        Entrar
+                    </button>
+                </form>
+                <div class="mt-8 text-center text-sm text-gray-500">
+                    <a href="#" onclick="navigateTo('home')" class="text-gray-400 hover:text-white">Voltar para Home</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================= -->
+    <!-- VIEW 3: APP / UPLOAD PAGE                 -->
+    <!-- ========================================= -->
+    <section id="view-app" class="view-section min-h-screen flex flex-col">
+        <!-- App Header -->
+        <header class="border-b border-white/10 bg-black/50 backdrop-blur-md sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 w-full h-16 flex items-center justify-between">
+                <div class="flex items-center gap-2 cursor-pointer" onclick="navigateTo('home')">
+                    <i class="fa-solid fa-microphone-lines text-xl text-brand-purple"></i>
+                    <span class="font-bold text-xl tracking-tight">Karaoke<span class="text-brand-purple">Flow</span> <span class="text-xs bg-white/10 px-2 py-0.5 rounded text-gray-400 font-normal ml-2">Studio</span></span>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="hidden md:flex items-center gap-2 text-sm text-gray-400 bg-white/5 px-3 py-1 rounded-full">
+                        <i class="fa-solid fa-coins text-yellow-500"></i>
+                        <span>Créditos: <strong>R$ 0,00</strong></span>
+                    </div>
+                    <button onclick="navigateTo('home')" class="text-gray-400 hover:text-white text-sm"><i class="fa-solid fa-right-from-bracket mr-1"></i> Sair</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- App Main -->
+        <div class="flex-grow flex flex-col items-center justify-center p-4">
+            <div class="w-full max-w-2xl">
+                <div class="text-center mb-10">
+                    <h1 class="text-3xl font-bold mb-4">Vamos criar seu Karaokê</h1>
+                    <p class="text-gray-400">Envie seu arquivo MP3 e nossa IA fará o resto.</p>
+                </div>
+
+                <div class="relative glass-card rounded-2xl p-1 shadow-2xl">
+                    <div class="bg-[#0a0a12]/80 backdrop-blur-xl rounded-xl p-8 border border-white/5">
+
+                        <!-- Header -->
+                        <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
+                            <h3 class="font-semibold text-white flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-brand-purple"></i> Nova Conversão</h3>
+                            <span class="text-xs text-gray-500 uppercase">MP3 para MP4</span>
+                        </div>
+
+                        <!-- 1. Upload Zone -->
+                        <div id="upload-zone" class="border-2 border-dashed border-gray-700 hover:border-brand-purple hover:bg-brand-purple/5 rounded-xl p-12 transition-all duration-300 cursor-pointer text-center group" onclick="document.getElementById('file-upload').click()">
+                            <input id="file-upload" type="file" class="hidden" accept=".mp3,.wav" onchange="startSimulation(this.files[0].name)">
+                            <div class="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg group-hover:shadow-purple-500/20">
+                                <i class="fa-solid fa-cloud-arrow-up text-3xl text-brand-purple"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-2">Arraste seu áudio aqui</h4>
+                            <p class="text-gray-400 mb-6">ou clique para procurar</p>
+                            <div class="flex justify-center gap-4 text-xs text-gray-500">
+                                <span class="bg-gray-800 px-2 py-1 rounded">MP3/WAV</span>
+                                <span class="bg-gray-800 px-2 py-1 rounded">Max 10MB</span>
+                            </div>
+                        </div>
+
+                        <!-- 2. Processing -->
+                        <div id="processing-state" class="hidden py-4 text-center">
+                            <div class="relative w-24 h-24 mx-auto mb-6">
+                                <div class="w-full h-full rounded-full border-4 border-gray-700"></div>
+                                <div class="absolute top-0 left-0 w-full h-full rounded-full border-4 border-brand-purple border-t-transparent animate-spin"></div>
+                                <div class="absolute inset-0 flex items-center justify-center"><span id="percentage-text" class="text-lg font-bold">0%</span></div>
+                            </div>
+                            <h4 class="text-lg font-semibold text-white animate-pulse" id="status-text">Iniciando...</h4>
+                            <div class="w-full bg-gray-800 rounded-full h-2 mt-6 overflow-hidden">
+                                <div id="progress-bar" class="bg-gradient-to-r from-brand-purple to-brand-pink h-2 rounded-full progress-bar-striped" style="width: 0%"></div>
+                            </div>
+                            <div class="mt-6 space-y-2 text-left bg-black/30 p-4 rounded-lg">
+                                <div class="flex items-center gap-3 text-sm text-gray-500" id="step-1"><i class="fa-regular fa-circle w-4"></i> Isolando instrumental...</div>
+                                <div class="flex items-center gap-3 text-sm text-gray-500" id="step-2"><i class="fa-regular fa-circle w-4"></i> Sincronizando legendas...</div>
+                                <div class="flex items-center gap-3 text-sm text-gray-500" id="step-3"><i class="fa-regular fa-circle w-4"></i> Renderizando vídeo MP4...</div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Success -->
+                        <div id="success-state" class="hidden text-center py-2">
+                            <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fa-solid fa-check text-3xl text-green-500"></i></div>
+                            <h2 class="text-2xl font-bold text-white mb-2">Sucesso!</h2>
+                            <p class="text-gray-400 mb-8">Seu vídeo Karaokê foi gerado.</p>
+                            <div class="bg-black/40 rounded-xl p-4 mb-8 flex items-center gap-4 border border-gray-700">
+                                <div class="w-16 h-16 bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-video text-brand-purple"></i></div>
+                                <div class="text-left flex-grow overflow-hidden">
+                                    <h5 class="font-bold text-white truncate text-sm">video_karaoke_final.mp4</h5>
+                                    <p class="text-xs text-gray-500">14.2 MB • HD 1080p</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button class="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-xl font-bold" onclick="resetUpload()">Novo</button>
+                                <button class="w-full bg-gradient-to-r from-brand-purple to-brand-pink hover:opacity-90 text-white py-3 px-4 rounded-xl font-bold shadow-lg shadow-purple-500/20"><i class="fa-solid fa-download mr-2"></i> Baixar</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Navigation Logic (SPA Router) -->
+    <script>
+        // Simple Router
+        function navigateTo(pageId) {
+            // Hide all views
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.remove('active');
+                setTimeout(() => {
+                    if(!el.classList.contains('active')) el.style.display = 'none';
+                }, 500); // Wait for transition
+            });
+
+            // Show target view
+            const target = document.getElementById('view-' + pageId);
+            // Hide others immediately for smoother swap or wait for fade
+            document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
+
+            if (target) {
+                target.style.display = (pageId === 'app' ? 'flex' : (pageId === 'login' ? 'flex' : 'block'));
+                // Small delay to allow display:block to apply before opacity
+                setTimeout(() => target.classList.add('active'), 50);
+            }
+
+            window.scrollTo(0,0);
+        }
+
+        // Login Handler
+        function handleLogin(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerHTML;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Entrando...';
+
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                navigateTo('app');
+            }, 1000);
+        }
+
+        // Upload Simulation Logic
+        function startSimulation(filename) {
+            const uploadZone = document.getElementById('upload-zone');
+            const processingState = document.getElementById('processing-state');
+            const successState = document.getElementById('success-state');
+            const progressBar = document.getElementById('progress-bar');
+            const percentageText = document.getElementById('percentage-text');
+            const statusText = document.getElementById('status-text');
+            const step1 = document.getElementById('step-1');
+            const step2 = document.getElementById('step-2');
+            const step3 = document.getElementById('step-3');
+
+            function setStepActive(el) {
+                el.classList.remove('text-gray-500');
+                el.classList.add('text-white', 'font-bold');
+                el.querySelector('i').className = 'fa-solid fa-circle-notch fa-spin text-brand-purple w-4';
+            }
+            function setStepDone(el) {
+                el.querySelector('i').className = 'fa-solid fa-check text-green-500 w-4';
+            }
+
+            // Reset UI
+            uploadZone.classList.add('hidden');
+            processingState.classList.remove('hidden');
+            progressBar.style.width = '0%';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 5;
+                if (progress > 100) progress = 100;
+
+                progressBar.style.width = `${progress}%`;
+                percentageText.innerText = `${Math.round(progress)}%`;
+
+                if (progress < 30) {
+                    statusText.innerText = "Isolando instrumental...";
+                    setStepActive(step1);
+                } else if (progress < 70) {
+                    setStepDone(step1);
+                    setStepActive(step2);
+                    statusText.innerText = "Sincronizando legendas...";
+                } else if (progress < 98) {
+                    setStepDone(step2);
+                    setStepActive(step3);
+                    statusText.innerText = "Renderizando vídeo...";
+                }
+
+                if (progress === 100) {
+                    clearInterval(interval);
+                    setStepDone(step3);
+                    setTimeout(() => {
+                        processingState.classList.add('hidden');
+                        successState.classList.remove('hidden');
+                    }, 600);
+                }
+            }, 100);
+        }
+
+        function resetUpload() {
+            document.getElementById('success-state').classList.add('hidden');
+            document.getElementById('upload-zone').classList.remove('hidden');
+            document.getElementById('file-upload').value = '';
+            // Reset steps style
+            [document.getElementById('step-1'), document.getElementById('step-2'), document.getElementById('step-3')].forEach(el => {
+                el.className = 'flex items-center gap-3 text-sm text-gray-500';
+                el.querySelector('i').className = 'fa-regular fa-circle w-4';
+            });
+        }
+    </script>
+</body>
+</html>
