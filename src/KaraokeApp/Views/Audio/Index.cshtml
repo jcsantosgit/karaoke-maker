@@ -44,19 +44,21 @@
                         <span class="text-xs text-gray-500 uppercase">MP3 para MP4</span>
                     </div>
 
-                    <!-- 1. Upload Zone -->
-                    <div id="upload-zone" class="border-2 border-dashed border-gray-700 hover:border-brand-purple hover:bg-brand-purple/5 rounded-xl p-12 transition-all duration-300 cursor-pointer text-center group" onclick="document.getElementById('file-upload').click()">
-                        <input id="file-upload" type="file" class="hidden" accept=".mp3,.wav" onchange="startSimulation(this.files[0].name)">
-                        <div class="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg group-hover:shadow-purple-500/20">
-                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-brand-purple"></i>
+                    <form id="upload-form" action="/Audio/Upload" method="post" enctype="multipart/form-data">
+                        <!-- 1. Upload Zone -->
+                        <div id="upload-zone" class="border-2 border-dashed border-gray-700 hover:border-brand-purple hover:bg-brand-purple/5 rounded-xl p-12 transition-all duration-300 cursor-pointer text-center group" onclick="document.getElementById('file-upload').click()">
+                            <input id="file-upload" name="audioFile" type="file" class="hidden" accept=".mp3,.wav,.mp4" onchange="handleFileUpload(this.files[0])">
+                            <div class="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg group-hover:shadow-purple-500/20">
+                                <i class="fa-solid fa-cloud-arrow-up text-3xl text-brand-purple"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-2">Arraste seu áudio aqui</h4>
+                            <p class="text-gray-400 mb-6">ou clique para procurar</p>
+                            <div class="flex justify-center gap-4 text-xs text-gray-500">
+                                <span class="bg-gray-800 px-2 py-1 rounded">MP3/WAV/MP4</span>
+                                <span class="bg-gray-800 px-2 py-1 rounded">Max 100MB</span>
+                            </div>
                         </div>
-                        <h4 class="text-xl font-bold text-white mb-2">Arraste seu áudio aqui</h4>
-                        <p class="text-gray-400 mb-6">ou clique para procurar</p>
-                        <div class="flex justify-center gap-4 text-xs text-gray-500">
-                            <span class="bg-gray-800 px-2 py-1 rounded">MP3/WAV</span>
-                            <span class="bg-gray-800 px-2 py-1 rounded">Max 10MB</span>
-                        </div>
-                    </div>
+                    </form>
 
                     <!-- 2. Processing -->
                     <div id="processing-state" class="hidden py-4 text-center">
@@ -84,13 +86,13 @@
                         <div class="bg-black/40 rounded-xl p-4 mb-8 flex items-center gap-4 border border-gray-700">
                             <div class="w-16 h-16 bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-video text-brand-purple"></i></div>
                             <div class="text-left flex-grow overflow-hidden">
-                                <h5 class="font-bold text-white truncate text-sm">video_karaoke_final.mp4</h5>
-                                <p class="text-xs text-gray-500">14.2 MB • HD 1080p</p>
+                                <h5 id="download-filename" class="font-bold text-white truncate text-sm">video_karaoke_final.mp4</h5>
+                                <p id="download-filesize" class="text-xs text-gray-500">14.2 MB • HD 1080p</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <button class="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-xl font-bold" onclick="resetUpload()">Novo</button>
-                            <button class="w-full bg-gradient-to-r from-brand-purple to-brand-pink hover:opacity-90 text-white py-3 px-4 rounded-xl font-bold shadow-lg shadow-purple-500/20"><i class="fa-solid fa-download mr-2"></i> Baixar</button>
+                            <a id="download-button" href="#" download class="w-full bg-gradient-to-r from-brand-purple to-brand-pink hover:opacity-90 text-white py-3 px-4 rounded-xl font-bold shadow-lg shadow-purple-500/20 flex items-center justify-center"><i class="fa-solid fa-download mr-2"></i> Baixar</a>
                         </div>
                     </div>
 

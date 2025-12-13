@@ -69,8 +69,8 @@ function checkLogin() {
     }
 }
 
-// Upload Simulation Logic
-function startSimulation(filename) {
+// File Upload Handler
+async function handleFileUpload(file) {
     const uploadZone = document.getElementById('upload-zone');
     const processingState = document.getElementById('processing-state');
     const successState = document.getElementById('success-state');
@@ -91,15 +91,19 @@ function startSimulation(filename) {
     }
 
     // Reset UI
-    uploadZone.classList.add('hidden');
-    processingState.classList.remove('hidden');
+    uploadZone.style.display = 'none';
+    processingState.style.display = 'block';
+    successState.style.display = 'none';
     progressBar.style.width = '0%';
 
+    const formData = new FormData();
+    formData.append('audioFile', file);
+
+    // Simulate progress for UI
     let progress = 0;
     const interval = setInterval(() => {
         progress += Math.random() * 5;
-        if (progress > 100) progress = 100;
-
+        if (progress > 95) progress = 95; // Don't reach 100% until fetch is done
         progressBar.style.width = `${progress}%`;
         percentageText.innerText = `${Math.round(progress)}%`;
 
@@ -110,26 +114,64 @@ function startSimulation(filename) {
             setStepDone(step1);
             setStepActive(step2);
             statusText.innerText = "Sincronizando legendas...";
-        } else if (progress < 98) {
+        } else {
             setStepDone(step2);
             setStepActive(step3);
             statusText.innerText = "Renderizando vídeo...";
         }
+    }, 200);
 
-        if (progress === 100) {
-            clearInterval(interval);
-            setStepDone(step3);
+    try {
+        const response = await fetch('/Audio/Upload', {
+            method: 'POST',
+            body: formData,
+        });
+
+        clearInterval(interval);
+        progressBar.style.width = `100%`;
+        percentageText.innerText = `100%`;
+        setStepDone(step3);
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const contentDisposition = response.headers.get('content-disposition');
+            let filename = 'karaoke.mp4';
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                if (filenameMatch.length > 1) {
+                    filename = filenameMatch[1];
+                }
+            }
+
+            const downloadUrl = URL.createObjectURL(blob);
+            
+            document.getElementById('download-filename').innerText = filename;
+            document.getElementById('download-filesize').innerText = `${(blob.size / 1024 / 1024).toFixed(2)} MB`;
+            document.getElementById('download-button').href = downloadUrl;
+            document.getElementById('download-button').download = filename;
+
             setTimeout(() => {
-                processingState.classList.add('hidden');
-                successState.classList.remove('hidden');
+                processingState.style.display = 'none';
+                successState.style.display = 'block';
             }, 600);
+
+        } else {
+            const errorText = await response.text();
+            alert(`Error: ${errorText}`);
+            resetUpload();
         }
-    }, 100);
+    } catch (error) {
+        clearInterval(interval);
+        alert(`Error: ${error.message}`);
+        resetUpload();
+    }
 }
 
+
 function resetUpload() {
-    document.getElementById('success-state').classList.add('hidden');
-    document.getElementById('upload-zone').classList.remove('hidden');
+    document.getElementById('success-state').style.display = 'none';
+    document.getElementById('processing-state').style.display = 'none';
+    document.getElementById('upload-zone').style.display = 'block';
     document.getElementById('file-upload').value = '';
     // Reset steps style
     [document.getElementById('step-1'), document.getElementById('step-2'), document.getElementById('step-3')].forEach(el => {
