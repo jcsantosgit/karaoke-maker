@@ -1,0 +1,28 @@
+# C#/.NET
+[Bb]in/
+[Oo]bj/
+[Uu]ploads/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+
+# Mac
+.DS_Store
+
+# NuGet
+packages/
+*.nupkg
+
+# Logs
+[Ll]ogs/
+*.log
+
+# Others
+*.swp
