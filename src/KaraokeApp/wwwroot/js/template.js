@@ -138,7 +138,7 @@ async function handleFileUpload(file) {
             let filename = 'karaoke.mp4';
             if (contentDisposition) {
                 const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-                if (filenameMatch.length > 1) {
+                if (filenameMatch && filenameMatch.length > 1) {
                     filename = filenameMatch[1];
                 }
             }
