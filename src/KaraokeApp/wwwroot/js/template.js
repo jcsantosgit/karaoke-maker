@@ -80,6 +80,7 @@ async function handleFileUpload(file) {
     const step1 = document.getElementById('step-1');
     const step2 = document.getElementById('step-2');
     const step3 = document.getElementById('step-3');
+    const language = document.getElementById('language').value;
 
     function setStepActive(el) {
         el.classList.remove('text-gray-500');
@@ -98,6 +99,7 @@ async function handleFileUpload(file) {
 
     const formData = new FormData();
     formData.append('audioFile', file);
+    formData.append('language', language);
 
     // Simulate progress for UI
     let progress = 0;

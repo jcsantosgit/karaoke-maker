@@ -22,10 +22,10 @@ public class AudioController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Upload(IFormFile audioFile)
+    public async Task<IActionResult> Upload(IFormFile audioFile, string language)
     {
-        if (audioFile == null || audioFile.Length == 0 || (!audioFile.FileName.EndsWith(".mp3") && !audioFile.FileName.EndsWith(".mp4")))
-            return BadRequest("Selecione um arquivo MP3 ou MP4.");
+        if (audioFile == null || audioFile.Length == 0 || !audioFile.FileName.EndsWith(".mp3"))
+            return BadRequest("Selecione um arquivo MP3.");
 
         string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
         Directory.CreateDirectory(uploadsFolder);
@@ -44,7 +44,7 @@ public class AudioController : Controller
         try
         {
             // Step 1: Generate SRT from audio
-            srtPath = await _service.GenerateSrtFromAudioAsync(audioPath);
+            srtPath = await _service.GenerateSrtFromAudioAsync(audioPath, language);
 
             // Step 2: Remove vocals to create instrumental track
             instrumentalPath = await _service.RemoveVocalsAsync(audioPath);

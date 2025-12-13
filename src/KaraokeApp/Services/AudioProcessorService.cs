@@ -12,18 +12,18 @@ using Microsoft.Extensions.Logging;
 public class AudioProcessorService
 {
     private readonly string _modelPath;
-    private readonly string _language;
     private readonly int _videoWidth;
     private readonly int _videoHeight;
     private readonly ILogger<AudioProcessorService> _logger;
+    private readonly IConfiguration _configuration;
 
     public AudioProcessorService(IConfiguration configuration, ILogger<AudioProcessorService> logger)
     {
-        _modelPath = configuration["Whisper:ModelPath"] ?? "Models/ggml-base.bin";
-        _language = configuration["Whisper:Language"] ?? "pt";
+        _modelPath = configuration["Whisper:ModelPath"] ?? "WhisperModels";
         _videoWidth = int.Parse(configuration["Video:Width"] ?? "1280");
         _videoHeight = int.Parse(configuration["Video:Height"] ?? "720");
         _logger = logger;
+        _configuration = configuration;
     }
 
     public async Task InitializeAsync()
@@ -33,7 +33,7 @@ public class AudioProcessorService
         await Task.Delay(1); // Make method genuinely async to avoid compiler warning
     }
 
-    public async Task<string> GenerateSrtFromAudioAsync(string audioPath)
+    public async Task<string> GenerateSrtFromAudioAsync(string audioPath, string language)
     {
         // Convert audio to a temporary WAV file for Whisper.net processing
         string wavPath = Path.ChangeExtension(Path.GetTempFileName(), ".wav");
@@ -43,11 +43,31 @@ public class AudioProcessorService
             .AddParameter(command)
             .Start();
 
+        // Select model based on language
+        string modelName = $"ggml-base.bin"; // Default model
+        if (language == "pt")
+        {
+            modelName = "ggml-base-pt.bin";
+        }
+        else if (language == "es")
+        {
+            modelName = "ggml-base-es.bin";
+        }
+        string modelFilePath = Path.Combine(_modelPath, modelName);
+
+        if (!File.Exists(modelFilePath))
+        {
+            _logger.LogError("Model file not found: {modelFilePath}", modelFilePath);
+            // Fallback to default model
+            modelFilePath = Path.Combine(_modelPath, "ggml-base.bin");
+        }
+
+
         // Transcription with Whisper.NET
         var segments = new List<Whisper.net.SegmentData>();
-        using var whisperFactory = WhisperFactory.FromPath(_modelPath);
+        using var whisperFactory = WhisperFactory.FromPath(modelFilePath);
         using var processor = whisperFactory.CreateBuilder()
-            .WithLanguage(_language)
+            .WithLanguage(language)
             .Build();
 
         using var fileStream = File.OpenRead(wavPath);

@@ -45,16 +45,24 @@
                     </div>
 
                     <form id="upload-form" action="/Audio/Upload" method="post" enctype="multipart/form-data">
+                        <div class="mb-4">
+                            <label for="language" class="block text-sm font-medium text-gray-300 mb-2">Idioma do Áudio</label>
+                            <select id="language" name="language" class="w-full bg-black/40 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-brand-purple focus:outline-none focus:ring-1 focus:ring-brand-purple">
+                                <option value="pt">Português</option>
+                                <option value="es">Espanhol</option>
+                                <option value="en">Inglês</option>
+                            </select>
+                        </div>
                         <!-- 1. Upload Zone -->
                         <div id="upload-zone" class="border-2 border-dashed border-gray-700 hover:border-brand-purple hover:bg-brand-purple/5 rounded-xl p-12 transition-all duration-300 cursor-pointer text-center group" onclick="document.getElementById('file-upload').click()">
-                            <input id="file-upload" name="audioFile" type="file" class="hidden" accept=".mp3,.wav,.mp4" onchange="handleFileUpload(this.files[0])">
+                            <input id="file-upload" name="audioFile" type="file" class="hidden" accept=".mp3" onchange="handleFileUpload(this.files[0])">
                             <div class="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg group-hover:shadow-purple-500/20">
                                 <i class="fa-solid fa-cloud-arrow-up text-3xl text-brand-purple"></i>
                             </div>
                             <h4 class="text-xl font-bold text-white mb-2">Arraste seu áudio aqui</h4>
                             <p class="text-gray-400 mb-6">ou clique para procurar</p>
                             <div class="flex justify-center gap-4 text-xs text-gray-500">
-                                <span class="bg-gray-800 px-2 py-1 rounded">MP3/WAV/MP4</span>
+                                <span class="bg-gray-800 px-2 py-1 rounded">MP3</span>
                                 <span class="bg-gray-800 px-2 py-1 rounded">Max 100MB</span>
                             </div>
                         </div>
