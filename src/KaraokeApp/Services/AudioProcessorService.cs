@@ -87,7 +87,7 @@ public class AudioProcessorService
             srtBuilder.AppendLine(currentSegment.Text.Trim());
             if (nextSegment != null)
             {
-                srtBuilder.AppendLine(@"{\fs18}" + nextSegment.Text.Trim() + @"}");
+                srtBuilder.AppendLine(@"[" + @"{\fs18}" + nextSegment.Text.Trim() + @"]");
             }
             srtBuilder.AppendLine();
         }
@@ -132,7 +132,7 @@ public class AudioProcessorService
         var duration = mediaInfo.Duration;
 
         var srtPathForFilter = srtPath.Replace(@"\", @"\\").Replace(":", @"\:");
-        var vf = $"subtitles=filename='{srtPathForFilter}':force_style='Alignment=5,Fontsize=24'";
+        var vf = $"subtitles=filename='{srtPathForFilter}':force_style='Alignment=5,Fontsize=24,PrimaryColour=&H00FFFF'";
         var command = $"-f lavfi -i color=c=black:s={_videoWidth}x{_videoHeight}:d={duration.TotalSeconds} -i \"{instrumentalAudioPath}\" -vf \"{vf}\" -c:v libx264 -c:a copy -b:v 2M -preset fast -shortest \"{outputPath}\"";
         _logger.LogInformation("FFmpeg command: {command}", command);
         var conversion = await FFmpeg.Conversions.New()

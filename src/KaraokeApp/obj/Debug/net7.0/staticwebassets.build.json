@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "UaEc7mwB5GaPHNmbLqBvYvKA5CvCrnxEFKvXbBznlbo=",
+  "Hash": "mds87r0YSNH4bFEz3Lb2Dm+5FM9GYXIRELNVHn6IKU4=",
   "Source": "KaraokeApp",
   "BasePath": "_content/KaraokeApp",
   "Mode": "Default",
@@ -1086,6 +1086,57 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/uploads/2b93ab70-2b36-49be-a26e-b8402225a086._karaoke.mp4"
+    },
+    {
+      "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/3b6df1da-159a-45b3-9107-3c9286e863af._karaoke.mp4",
+      "SourceId": "KaraokeApp",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/",
+      "BasePath": "_content/KaraokeApp",
+      "RelativePath": "uploads/3b6df1da-159a-45b3-9107-3c9286e863af._karaoke.mp4",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/3b6df1da-159a-45b3-9107-3c9286e863af._karaoke.mp4"
+    },
+    {
+      "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/b3fbc5f8-203c-421e-8538-b9ba8f3672e0._karaoke.mp4",
+      "SourceId": "KaraokeApp",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/",
+      "BasePath": "_content/KaraokeApp",
+      "RelativePath": "uploads/b3fbc5f8-203c-421e-8538-b9ba8f3672e0._karaoke.mp4",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/b3fbc5f8-203c-421e-8538-b9ba8f3672e0._karaoke.mp4"
+    },
+    {
+      "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/b4b8fede-c54e-44aa-b32d-b2703bddb0dd._karaoke.mp4",
+      "SourceId": "KaraokeApp",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/",
+      "BasePath": "_content/KaraokeApp",
+      "RelativePath": "uploads/b4b8fede-c54e-44aa-b32d-b2703bddb0dd._karaoke.mp4",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/b4b8fede-c54e-44aa-b32d-b2703bddb0dd._karaoke.mp4"
     }
   ]
 }
