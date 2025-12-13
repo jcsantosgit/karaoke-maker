@@ -1,7 +1,7 @@
 # C#/.NET
-[Bb]in/
-[Oo]bj/
-[Uu]ploads/
+bin/
+obj/
+uploads/
 
 # Visual Studio
 .vs/
@@ -21,7 +21,7 @@ packages/
 *.nupkg
 
 # Logs
-[Ll]ogs/
+logs/
 *.log
 
 # Others

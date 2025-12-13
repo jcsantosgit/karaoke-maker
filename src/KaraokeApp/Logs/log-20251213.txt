@@ -92,3 +92,4 @@ System.IO.IOException: Failed to bind to address http://127.0.0.1:5080: address 
 2025-12-13 15:40:06.336 -03:00 [INF] Shut down complete
 2025-12-13 15:44:39.169 -03:00 [WRN] Failed to determine the https port for redirect.
 2025-12-13 15:58:34.860 -03:00 [INF] Shut down complete
+2025-12-13 16:00:30.175 -03:00 [WRN] Failed to determine the https port for redirect.
