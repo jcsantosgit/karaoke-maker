@@ -1,0 +1,225 @@
+@{
+    ViewData["Title"] = "Process Audio";
+}
+
+<div id="uploader-page">
+    <div class="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <div class="max-w-xl w-full">
+            <div class="bg-gray-800 rounded-xl shadow-lg p-8">
+                <div class="flex items-center justify-center mb-8">
+                    <i class="fas fa-upload text-indigo-400 text-4xl"></i>
+                </div>
+
+                <h1 class="text-2xl font-bold text-center text-white mb-2">
+                    Upload Your Media File
+                </h1>
+                <p class="text-center text-gray-400 mb-8">
+                    Drag and drop your MP4 or MP3 file, or click to select.
+                </p>
+
+                <form id="upload-form" asp-action="Upload" method="post" enctype="multipart/form-data" class="space-y-6">
+                    <div id="drop-zone" class="relative border-2 border-dashed rounded-lg p-8 text-center transition-colors border-gray-600 hover:border-indigo-500">
+                        <input type="file" id="file-input" name="audioFile" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".mp4,.mp3" />
+
+                        <div id="file-status-container">
+                            <!-- Initial state -->
+                            <div id="initial-state" class="space-y-2">
+                                <i class="fas fa-file-audio text-gray-500 text-4xl mx-auto"></i>
+                                <p class="text-sm text-gray-500">
+                                    Drop your file here, or click to select.
+                                </p>
+                            </div>
+                            <!-- Status states -->
+                            <div id="status-state" class="hidden space-y-2">
+                                <div id="icon-container"></div>
+                                <p id="status-message" class="text-sm"></p>
+                                <p id="file-name" class="text-sm text-gray-500"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="convert-btn" type="submit" class="hidden w-full bg-indigo-600 text-white rounded-lg px-4 py-3 hover:bg-indigo-700 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 btn">
+                        <i class="fas fa-cogs mr-2"></i>Convert File
+                    </button>
+
+                    <a id="download-link" href="#" class="hidden w-full bg-green-600 text-white rounded-lg px-4 py-3 hover:bg-green-700 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center gap-2 btn">
+                        <i class="fas fa-download mr-2"></i>Download Converted File
+                    </a>
+                </form>
+
+                <div class="flex justify-between items-center mt-4">
+                    <button id="reset-btn" class="hidden text-sm text-red-500 hover:text-red-700 transition-colors">
+                        <i class="fas fa-trash-alt mr-2"></i>Clear and Restart
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const uploadForm = document.getElementById('upload-form');
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const fileStatusContainer = document.getElementById('file-status-container');
+        const initialState = document.getElementById('initial-state');
+        const statusState = document.getElementById('status-state');
+        const iconContainer = document.getElementById('icon-container');
+        const statusMessage = document.getElementById('status-message');
+        const fileName = document.getElementById('file-name');
+        const convertBtn = document.getElementById('convert-btn');
+        const downloadLink = document.getElementById('download-link');
+        const resetBtn = document.getElementById('reset-btn');
+
+        let dragActive = false;
+        let fileStatus = null;
+        let downloadUrl = null;
+        let processingTimeout = null;
+
+        const icons = {
+            invalid: '<i class="fas fa-times-circle text-red-500 text-4xl mx-auto"></i>',
+            processing: '<i class="fas fa-spinner fa-spin text-indigo-500 text-4xl mx-auto"></i>',
+            completed: '<i class="fas fa-check-circle text-green-500 text-4xl mx-auto"></i>',
+            ready: '<i class="fas fa-check-circle text-green-500 text-4xl mx-auto"></i>',
+        };
+
+        function handleReset() {
+            if (downloadUrl) {
+                URL.revokeObjectURL(downloadUrl);
+            }
+            if (processingTimeout) {
+                clearTimeout(processingTimeout);
+            }
+            fileStatus = null;
+            downloadUrl = null;
+            updateUI();
+        }
+
+        function validateFile(file) {
+            const validTypes = ['video/mp4', 'audio/mpeg'];
+            if (!validTypes.includes(file.type)) {
+                return {
+                    file,
+                    status: 'invalid',
+                    message: 'Please upload only MP4 or MP3 files.'
+                };
+            }
+            return {
+                file,
+                status: 'ready',
+                message: 'File ready for upload'
+            };
+        }
+
+        function updateUI() {
+            if (fileStatus) {
+                initialState.classList.add('hidden');
+                statusState.classList.remove('hidden');
+                resetBtn.classList.remove('hidden');
+
+                iconContainer.innerHTML = icons[fileStatus.status] || '';
+                statusMessage.textContent = fileStatus.message || '';
+                fileName.textContent = fileStatus.file.name || '';
+
+                statusMessage.className = 'text-sm ';
+                switch (fileStatus.status) {
+                    case 'invalid':
+                        statusMessage.classList.add('text-red-500');
+                        dropZone.className = 'relative border-2 border-dashed rounded-lg p-8 text-center transition-colors border-red-500 bg-red-900';
+                        convertBtn.classList.add('hidden');
+                        downloadLink.classList.add('hidden');
+                        break;
+                    case 'processing':
+                        statusMessage.classList.add('text-indigo-400');
+                        dropZone.className = 'relative border-2 border-dashed rounded-lg p-8 text-center transition-colors border-indigo-500 bg-indigo-900';
+                        convertBtn.classList.add('hidden');
+                        downloadLink.classList.add('hidden');
+                        break;
+                    case 'completed':
+                        statusMessage.classList.add('text-green-400');
+                        dropZone.className = 'relative border-2 border-dashed rounded-lg p-8 text-center transition-colors border-green-500 bg-green-900';
+                        convertBtn.classList.add('hidden');
+                        downloadLink.classList.remove('hidden');
+                        downloadLink.href = downloadUrl;
+                        downloadLink.download = `karaoke-${fileStatus.file.name}`;
+                        break;
+                    case 'ready':
+                        statusMessage.classList.add('text-green-400');
+                        dropZone.className = 'relative border-2 border-dashed rounded-lg p-8 text-center transition-colors border-green-500 bg-green-900';
+                        convertBtn.classList.remove('hidden');
+                        downloadLink.classList.add('hidden');
+                        break;
+                }
+            } else {
+                initialState.classList.remove('hidden');
+                statusState.classList.add('hidden');
+                resetBtn.classList.add('hidden');
+                convertBtn.classList.add('hidden');
+                downloadLink.classList.add('hidden');
+                dropZone.className = 'relative border-2 border-dashed rounded-lg p-8 text-center transition-colors border-gray-600 hover:border-indigo-500';
+                fileInput.value = '';
+            }
+        }
+
+        resetBtn.addEventListener('click', handleReset);
+
+        dropZone.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dragActive = true;
+            dropZone.classList.add('border-indigo-500', 'bg-gray-700');
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dragActive = false;
+            dropZone.classList.remove('border-indigo-500', 'bg-gray-700');
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dragActive = false;
+            dropZone.classList.remove('border-indigo-500', 'bg-gray-700');
+            const files = e.dataTransfer.files;
+            if (files?.[0]) {
+                fileStatus = validateFile(files[0]);
+                updateUI();
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (files?.[0]) {
+                fileStatus = validateFile(files[0]);
+                updateUI();
+            }
+        });
+
+        uploadForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            showProcessingState();
+            e.target.submit();
+        });
+        
+        function showProcessingState() {
+            if (fileInput.files[0]) {
+                fileStatus = {
+                    file: fileInput.files[0],
+                    status: 'processing',
+                    message: 'Sending file for processing...'
+                };
+                updateUI();
+            }
+        }
+    });
+</script>
+}
