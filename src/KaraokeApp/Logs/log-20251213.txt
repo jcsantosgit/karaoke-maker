@@ -70,3 +70,13 @@ System.IO.IOException: Failed to bind to address http://127.0.0.1:5080: address 
 2025-12-13 13:28:06.770 -03:00 [INF] Shut down complete
 2025-12-13 13:34:44.049 -03:00 [INF] Shut down complete
 2025-12-13 13:35:09.120 -03:00 [WRN] Failed to determine the https port for redirect.
+2025-12-13 13:44:26.865 -03:00 [INF] Shut down complete
+2025-12-13 14:09:40.844 -03:00 [INF] Shut down complete
+2025-12-13 14:10:20.183 -03:00 [WRN] Failed to determine the https port for redirect.
+2025-12-13 14:17:39.844 -03:00 [INF] Shut down complete
+2025-12-13 14:17:57.861 -03:00 [INF] Shut down complete
+2025-12-13 14:19:13.606 -03:00 [WRN] Failed to determine the https port for redirect.
+2025-12-13 14:20:14.318 -03:00 [INF] Shut down complete
+2025-12-13 14:21:47.372 -03:00 [INF] Shut down complete
+2025-12-13 14:23:00.185 -03:00 [WRN] Failed to determine the https port for redirect.
+2025-12-13 14:23:43.993 -03:00 [INF] Shut down complete

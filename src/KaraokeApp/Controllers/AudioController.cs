@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.IO;
 using System.Threading.Tasks;
 using KaraokeApp.Models;
+using System;
 
 public class AudioController : Controller
 {
@@ -28,7 +29,10 @@ public class AudioController : Controller
 
         string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
         Directory.CreateDirectory(uploadsFolder);
-        string audioPath = Path.Combine(uploadsFolder, audioFile.FileName);
+
+        // Generate a unique file name to prevent conflicts
+        var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(audioFile.FileName)}";
+        string audioPath = Path.Combine(uploadsFolder, uniqueFileName);
 
         using (var stream = new FileStream(audioPath, FileMode.Create))
         {
@@ -54,7 +58,7 @@ public class AudioController : Controller
             System.IO.File.Delete(instrumentalPath);
 
             // Return the processed video file for download
-            var fileName = Path.GetFileName(outputPath);
+            var fileName = $"{Path.GetFileNameWithoutExtension(audioFile.FileName)}_karaoke.mp4";
             return PhysicalFile(outputPath, "video/mp4", fileName);
         }
         catch (Exception ex)

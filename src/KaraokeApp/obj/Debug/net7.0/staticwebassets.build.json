@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "IF0l8rstUDqDBUtSy/7K73liw4GIaw+B3J044txWlGs=",
+  "Hash": "ha8zAPVPoqKlVeYgP68xD6KdgLUn0LK/tWsROxpM0iU=",
   "Source": "KaraokeApp",
   "BasePath": "_content/KaraokeApp",
   "Mode": "Default",
@@ -1071,12 +1071,12 @@
       "OriginalItemSpec": "wwwroot/lib/jquery/LICENSE.txt"
     },
     {
-      "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/to-sem-voce-maeana-recorte._instrumental.wav",
+      "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/075afee4-b7ed-46b7-a990-9e74c19cf1b0._karaoke.mp4",
       "SourceId": "KaraokeApp",
       "SourceType": "Discovered",
       "ContentRoot": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/",
       "BasePath": "_content/KaraokeApp",
-      "RelativePath": "uploads/to-sem-voce-maeana-recorte._instrumental.wav",
+      "RelativePath": "uploads/075afee4-b7ed-46b7-a990-9e74c19cf1b0._karaoke.mp4",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -1085,15 +1085,15 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot/uploads/to-sem-voce-maeana-recorte._instrumental.wav"
+      "OriginalItemSpec": "wwwroot/uploads/075afee4-b7ed-46b7-a990-9e74c19cf1b0._karaoke.mp4"
     },
     {
-      "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/to-sem-voce-maeana-recorte.srt",
+      "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/3cf1d76b-864b-4f27-ac4f-b16f08a2db94._karaoke.mp4",
       "SourceId": "KaraokeApp",
       "SourceType": "Discovered",
       "ContentRoot": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/",
       "BasePath": "_content/KaraokeApp",
-      "RelativePath": "uploads/to-sem-voce-maeana-recorte.srt",
+      "RelativePath": "uploads/3cf1d76b-864b-4f27-ac4f-b16f08a2db94._karaoke.mp4",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -1102,7 +1102,58 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot/uploads/to-sem-voce-maeana-recorte.srt"
+      "OriginalItemSpec": "wwwroot/uploads/3cf1d76b-864b-4f27-ac4f-b16f08a2db94._karaoke.mp4"
+    },
+    {
+      "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/5620a696-ec54-4143-a311-ea7706c7a2d8._karaoke.mp4",
+      "SourceId": "KaraokeApp",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/",
+      "BasePath": "_content/KaraokeApp",
+      "RelativePath": "uploads/5620a696-ec54-4143-a311-ea7706c7a2d8._karaoke.mp4",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/5620a696-ec54-4143-a311-ea7706c7a2d8._karaoke.mp4"
+    },
+    {
+      "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/e2f22f5b-ef40-443f-bf59-53c55ad07109._karaoke.mp4",
+      "SourceId": "KaraokeApp",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/",
+      "BasePath": "_content/KaraokeApp",
+      "RelativePath": "uploads/e2f22f5b-ef40-443f-bf59-53c55ad07109._karaoke.mp4",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/e2f22f5b-ef40-443f-bf59-53c55ad07109._karaoke.mp4"
+    },
+    {
+      "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/to-sem-voce-maeana-recorte._karaoke.mp4",
+      "SourceId": "KaraokeApp",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/",
+      "BasePath": "_content/KaraokeApp",
+      "RelativePath": "uploads/to-sem-voce-maeana-recorte._karaoke.mp4",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/to-sem-voce-maeana-recorte._karaoke.mp4"
     }
   ]
 }

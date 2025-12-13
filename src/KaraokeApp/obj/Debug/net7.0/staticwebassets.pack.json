@@ -245,12 +245,24 @@
       "PackagePath": "staticwebassets/lib/jquery/dist/jquery.min.map"
     },
     {
-      "Id": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/to-sem-voce-maeana-recorte._instrumental.wav",
-      "PackagePath": "staticwebassets/uploads/to-sem-voce-maeana-recorte._instrumental.wav"
+      "Id": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/075afee4-b7ed-46b7-a990-9e74c19cf1b0._karaoke.mp4",
+      "PackagePath": "staticwebassets/uploads/075afee4-b7ed-46b7-a990-9e74c19cf1b0._karaoke.mp4"
     },
     {
-      "Id": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/to-sem-voce-maeana-recorte.srt",
-      "PackagePath": "staticwebassets/uploads/to-sem-voce-maeana-recorte.srt"
+      "Id": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/3cf1d76b-864b-4f27-ac4f-b16f08a2db94._karaoke.mp4",
+      "PackagePath": "staticwebassets/uploads/3cf1d76b-864b-4f27-ac4f-b16f08a2db94._karaoke.mp4"
+    },
+    {
+      "Id": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/5620a696-ec54-4143-a311-ea7706c7a2d8._karaoke.mp4",
+      "PackagePath": "staticwebassets/uploads/5620a696-ec54-4143-a311-ea7706c7a2d8._karaoke.mp4"
+    },
+    {
+      "Id": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/e2f22f5b-ef40-443f-bf59-53c55ad07109._karaoke.mp4",
+      "PackagePath": "staticwebassets/uploads/e2f22f5b-ef40-443f-bf59-53c55ad07109._karaoke.mp4"
+    },
+    {
+      "Id": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/to-sem-voce-maeana-recorte._karaoke.mp4",
+      "PackagePath": "staticwebassets/uploads/to-sem-voce-maeana-recorte._karaoke.mp4"
     },
     {
       "Id": "obj/Debug/net7.0/staticwebassets/msbuild.KaraokeApp.Microsoft.AspNetCore.StaticWebAssets.props",
