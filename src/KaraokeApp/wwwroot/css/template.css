@@ -29,3 +29,8 @@ body { background-color: #05050a; color: #ffffff; overflow-x: hidden; }
 /* View Transitions */
 .view-section { display: none; opacity: 0; transition: opacity 0.5s ease-in-out; }
 .view-section.active { display: block; opacity: 1; }
+
+/* Fix for login and register pages */
+#view-login.active, #view-register.active {
+    display: flex;
+}
