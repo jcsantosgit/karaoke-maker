@@ -1,20 +1,151 @@
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="text-center">
-    <div class="max-w-2xl mx-auto">
-        <h1 class="text-4xl font-bold text-white sm:text-6xl">
-            Welcome to KaraokeApp
-        </h1>
-        <p class="mt-6 text-lg leading-8 text-gray-300">
-            Transform any song into a karaoke track. Upload your music and get instrumental and vocal tracks in minutes.
-        </p>
-        <div class="mt-10 flex items-center justify-center gap-x-6">
-            <a href="/Audio" class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 btn">
-                Get started <i class="fas fa-arrow-right ml-2"></i>
-            </a>
-            <a href="#" class="text-sm font-semibold leading-6 text-white">Learn more <span aria-hidden="true">→</span></a>
+<section id="view-home" class="view-section active">
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 transition-all duration-300 backdrop-blur-md border-b border-white/5 bg-black/50" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-2 cursor-pointer" onclick="navigateTo('/')">
+                    <i class="fa-solid fa-microphone-lines text-2xl text-brand-purple"></i>
+                    <span class="font-bold text-2xl tracking-tight">Karaoke<span class="text-brand-purple">Flow</span></span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="#how-it-works" class="hover:text-brand-purple transition-colors px-3 py-2 text-sm font-medium">Como Funciona</a>
+                        <a href="#features" class="hover:text-brand-purple transition-colors px-3 py-2 text-sm font-medium">Recursos</a>
+                        <a href="#pricing" class="hover:text-brand-purple transition-colors px-3 py-2 text-sm font-medium">Preços</a>
+                        <button onclick="navigateTo('/Login')" class="bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-full text-sm font-medium transition-all">Entrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <main class="pt-32 pb-16 sm:pt-40 sm:pb-24 lg:pb-32 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="lg:grid lg:grid-cols-12 lg:gap-16 items-center">
+                <div class="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left flex flex-col justify-center z-10">
+                    <div class="inline-flex items-center px-3 py-1 rounded-full border border-brand-purple/30 bg-brand-purple/10 text-brand-purple text-xs font-semibold tracking-wide uppercase mb-4 w-fit mx-auto lg:mx-0">
+                        <span class="w-2 h-2 rounded-full bg-brand-purple mr-2 animate-pulse"></span>
+                        Conversão Ultra Rápida
+                    </div>
+                    <h1 class="text-4xl tracking-tight font-extrabold text-white sm:text-5xl md:text-6xl">
+                        De MP3 para Vídeo <span class="text-gradient">Karaokê MP4</span>
+                    </h1>
+                    <p class="mt-3 text-base text-gray-400 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
+                        Nossa IA remove a voz do cantor e cria um vídeo MP4 com a letra sincronizada em instantes.
+                    </p>
+                    <div class="mt-8 flex flex-col sm:flex-row gap-4 sm:justify-center lg:justify-start">
+                        <button onclick="navigateTo('/Login')" class="px-8 py-3 rounded-full text-white bg-gradient-to-r from-brand-purple to-brand-pink hover:opacity-90 shadow-lg shadow-purple-500/25 transition-all font-bold flex items-center justify-center">
+                            <i class="fa-solid fa-rocket mr-2"></i> Criar Agora
+                        </button>
+                        <a href="#how-it-works" class="px-8 py-3 rounded-full text-white bg-white/5 border border-white/20 hover:bg-white/10 transition-all font-medium flex items-center justify-center">
+                            Saiba Mais
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Visual Mockup -->
+                <div class="mt-12 lg:mt-0 lg:col-span-6 animate-float">
+                    <div class="relative glass-card rounded-2xl p-4 shadow-2xl border-t border-l border-white/20">
+                        <div class="aspect-video bg-gray-900 rounded-lg flex items-center justify-center relative overflow-hidden border border-gray-700">
+                            <div class="absolute inset-0 bg-gradient-to-br from-purple-900/50 to-black"></div>
+                            <div class="relative z-10 text-center">
+                                <h3 class="text-2xl font-bold text-white mb-2 tracking-widest animate-pulse">♪ LETRA AQUI ♪</h3>
+                                <div class="flex justify-center gap-2 mt-4">
+                                    <div class="w-2 h-2 rounded-full bg-white animate-bounce"></div>
+                                    <div class="w-2 h-2 rounded-full bg-white animate-bounce" style="animation-delay: 0.1s"></div>
+                                    <div class="w-2 h-2 rounded-full bg-white animate-bounce" style="animation-delay: 0.2s"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="mt-4 text-sm text-gray-400 font-medium text-center">Preview do Resultado Final</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Stats -->
+    <div class="border-y border-white/5 bg-white/5 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-4 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div><div class="text-3xl font-bold text-white">Rápido</div><div class="text-sm text-gray-400">Conversão Flash</div></div>
+            <div><div class="text-3xl font-bold text-white">MP4</div><div class="text-sm text-gray-400">Vídeo Pronto</div></div>
+            <div><div class="text-3xl font-bold text-white">100%</div><div class="text-sm text-gray-400">Sem Voz</div></div>
+            <div><div class="text-3xl font-bold text-white">4.9/5</div><div class="text-sm text-gray-400">Avaliação</div></div>
         </div>
     </div>
-</div>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="py-20 max-w-7xl mx-auto px-4">
+        <div class="text-center mb-16">
+            <h2 class="text-brand-purple font-semibold uppercase tracking-wide">Como Funciona</h2>
+            <p class="text-3xl font-extrabold text-white mt-2">MP3 para Karaoke em segundos</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="glass-card p-8 rounded-2xl relative hover:-translate-y-2 transition-transform">
+                <div class="absolute -top-6 left-8 bg-gray-900 border border-gray-700 text-brand-purple font-bold w-12 h-12 rounded-xl flex items-center justify-center shadow-lg">01</div>
+                <i class="fa-solid fa-cloud-arrow-up text-4xl text-gray-300 mt-4 mb-4"></i>
+                <h3 class="text-xl font-bold text-white mb-2">Upload</h3>
+                <p class="text-gray-400">Envie seu arquivo de áudio MP3 ou WAV.</p>
+            </div>
+            <div class="glass-card p-8 rounded-2xl relative hover:-translate-y-2 transition-transform">
+                <div class="absolute -top-6 left-8 bg-gray-900 border border-gray-700 text-brand-purple font-bold w-12 h-12 rounded-xl flex items-center justify-center shadow-lg">02</div>
+                <i class="fa-solid fa-wand-magic-sparkles text-4xl text-brand-purple mt-4 mb-4"></i>
+                <h3 class="text-xl font-bold text-white mb-2">IA Processa</h3>
+                <p class="text-gray-400">Separamos a voz e sincronizamos a letra.</p>
+            </div>
+            <div class="glass-card p-8 rounded-2xl relative hover:-translate-y-2 transition-transform">
+                <div class="absolute -top-6 left-8 bg-gray-900 border border-gray-700 text-brand-purple font-bold w-12 h-12 rounded-xl flex items-center justify-center shadow-lg">03</div>
+                <i class="fa-solid fa-download text-4xl text-brand-pink mt-4 mb-4"></i>
+                <h3 class="text-xl font-bold text-white mb-2">Baixar</h3>
+                <p class="text-gray-400">Seu vídeo MP4 pronto para cantar.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-20 max-w-7xl mx-auto px-4">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl font-extrabold text-white">Planos</h2>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <!-- Free -->
+            <div class="glass-card p-8 rounded-2xl border-t-4 border-gray-500">
+                <h3 class="text-xl font-semibold text-white">Gratuito</h3>
+                <div class="mt-4 text-4xl font-extrabold text-white">R$0</div>
+                <ul class="mt-6 space-y-4 text-sm text-gray-300">
+                    <li><i class="fa-solid fa-check text-green-400 mr-2"></i> 1 Vídeo a cada 2 meses</li>
+                </ul>
+                <button onclick="navigateTo('/Login')" class="mt-8 w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-medium transition-colors">Criar Conta</button>
+            </div>
+            <!-- Avulso -->
+            <div class="glass-card p-8 rounded-2xl border-t-4 border-brand-blue">
+                <h3 class="text-xl font-semibold text-white">Avulso</h3>
+                <div class="mt-4 flex items-baseline text-white"><span class="text-4xl font-extrabold">R$3</span><span class="text-gray-400 text-lg ml-1">/vídeo</span></div>
+                <ul class="mt-6 space-y-4 text-sm text-gray-300">
+                    <li><i class="fa-solid fa-check text-brand-blue mr-2"></i> Sem mensalidade</li>
+                </ul>
+                <button onclick="navigateTo('/Login')" class="mt-8 w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-medium transition-colors">Comprar</button>
+            </div>
+            <!-- Anual -->
+            <div class="glass-card p-8 rounded-2xl border-t-4 border-brand-purple relative transform md:-translate-y-4">
+                <div class="absolute top-0 right-0 -mt-3 mr-3 px-3 py-1 bg-brand-purple text-white text-xs font-bold rounded-full uppercase">Melhor Valor</div>
+                <h3 class="text-xl font-semibold text-white">Anual</h3>
+                <div class="mt-4 flex items-baseline text-white"><span class="text-4xl font-extrabold">R$29,90</span><span class="text-gray-400 text-lg ml-1">/ano</span></div>
+                <ul class="mt-6 space-y-4 text-sm text-white">
+                    <li><i class="fa-solid fa-check text-brand-purple mr-2"></i> <strong>Ilimitado</strong></li>
+                </ul>
+                <button onclick="navigateTo('/Login')" class="mt-8 w-full bg-gradient-to-r from-brand-purple to-brand-pink hover:opacity-90 text-white py-2 rounded-lg font-medium shadow-lg">Assinar</button>
+            </div>
+        </div>
+    </section>
+
+    <footer class="border-t border-white/10 bg-black/50 py-8 text-center text-sm text-gray-500">
+        <p>&copy; 2023 KaraokeFlow AI. Todos os direitos reservados.</p>
+    </footer>
+</section>

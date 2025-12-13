@@ -5,16 +5,16 @@
       "PackagePath": "staticwebassets/KaraokeApp.bundle.scp.css"
     },
     {
-      "Id": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/css/site.css",
-      "PackagePath": "staticwebassets/css/site.css"
+      "Id": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/css/template.css",
+      "PackagePath": "staticwebassets/css/template.css"
     },
     {
       "Id": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/favicon.ico",
       "PackagePath": "staticwebassets/favicon.ico"
     },
     {
-      "Id": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/js/site.js",
-      "PackagePath": "staticwebassets/js/site.js"
+      "Id": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/js/template.js",
+      "PackagePath": "staticwebassets/js/template.js"
     },
     {
       "Id": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/lib/bootstrap/LICENSE",
@@ -263,6 +263,10 @@
     {
       "Id": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/e2f22f5b-ef40-443f-bf59-53c55ad07109._karaoke.mp4",
       "PackagePath": "staticwebassets/uploads/e2f22f5b-ef40-443f-bf59-53c55ad07109._karaoke.mp4"
+    },
+    {
+      "Id": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/ffe26ae6-752a-4d5e-be6d-ec3ba81f8e99._karaoke.mp4",
+      "PackagePath": "staticwebassets/uploads/ffe26ae6-752a-4d5e-be6d-ec3ba81f8e99._karaoke.mp4"
     },
     {
       "Id": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/to-sem-voce-maeana-recorte._karaoke.mp4",

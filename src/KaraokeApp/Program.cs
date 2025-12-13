@@ -60,7 +60,7 @@ try
     app.UseAuthorization();
     app.MapControllerRoute(
         name: "default",
-        pattern: "{controller=Audio}/{action=Index}/{id?}");
+        pattern: "{controller=Home}/{action=Index}/{id?}");
 
     // Initialize FFmpeg and Whisper model
     using (var scope = app.Services.CreateScope())

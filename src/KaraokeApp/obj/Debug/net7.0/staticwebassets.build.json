@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "vwOQaoZ6IVllnZ1vyUzecghwuFrcL5MXdlAx4d0YixE=",
+  "Hash": "6ppnSUHXLE2wBy8Ke3LIvUP8ZjJ3IYCtZpkXR7Q+kek=",
   "Source": "KaraokeApp",
   "BasePath": "_content/KaraokeApp",
   "Mode": "Default",
@@ -51,12 +51,12 @@
       "OriginalItemSpec": "/home/joao/Projects/karaoke-project/src/KaraokeApp/obj/Debug/net7.0/scopedcss/projectbundle/KaraokeApp.bundle.scp.css"
     },
     {
-      "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/css/site.css",
+      "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/css/template.css",
       "SourceId": "KaraokeApp",
       "SourceType": "Discovered",
       "ContentRoot": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/",
       "BasePath": "_content/KaraokeApp",
-      "RelativePath": "css/site.css",
+      "RelativePath": "css/template.css",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -65,7 +65,7 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot/css/site.css"
+      "OriginalItemSpec": "wwwroot/css/template.css"
     },
     {
       "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/favicon.ico",
@@ -85,12 +85,12 @@
       "OriginalItemSpec": "wwwroot/favicon.ico"
     },
     {
-      "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/js/site.js",
+      "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/js/template.js",
       "SourceId": "KaraokeApp",
       "SourceType": "Discovered",
       "ContentRoot": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/",
       "BasePath": "_content/KaraokeApp",
-      "RelativePath": "js/site.js",
+      "RelativePath": "js/template.js",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -99,7 +99,7 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot/js/site.js"
+      "OriginalItemSpec": "wwwroot/js/template.js"
     },
     {
       "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/lib/bootstrap/dist/css/bootstrap-grid.css",
@@ -1154,6 +1154,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/uploads/e2f22f5b-ef40-443f-bf59-53c55ad07109._karaoke.mp4"
+    },
+    {
+      "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/ffe26ae6-752a-4d5e-be6d-ec3ba81f8e99._karaoke.mp4",
+      "SourceId": "KaraokeApp",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/",
+      "BasePath": "_content/KaraokeApp",
+      "RelativePath": "uploads/ffe26ae6-752a-4d5e-be6d-ec3ba81f8e99._karaoke.mp4",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/ffe26ae6-752a-4d5e-be6d-ec3ba81f8e99._karaoke.mp4"
     },
     {
       "Identity": "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/to-sem-voce-maeana-recorte._karaoke.mp4",
