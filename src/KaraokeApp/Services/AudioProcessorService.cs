@@ -87,7 +87,8 @@ public class AudioProcessorService
             srtBuilder.AppendLine(currentSegment.Text.Trim());
             if (nextSegment != null)
             {
-                srtBuilder.AppendLine(@"[" + @"{\fs18}" + nextSegment.Text.Trim() + @"]");
+                srtBuilder.AppendLine();
+                srtBuilder.AppendLine(@"...." + @"{\fs18}" + nextSegment.Text.Trim() + @"....");
             }
             srtBuilder.AppendLine();
         }
@@ -101,25 +102,40 @@ public class AudioProcessorService
         return srtPath;
     }
 
+    // public async Task<string> RemoveVocalsAsync(string inputAudioPath)
+    // {
+    //     string instrumentalPath = Path.ChangeExtension(inputAudioPath, "_instrumental.mp4");
+
+    //     // Use FFmpeg to remove vocals and encode as AAC in an MP4 container
+    //     var command1 = $"-i \"{inputAudioPath}\" -vn -af \"pan=stereo\\|c0=FL-0.5*FC\\|c1=FR-0.5*FC\" -c:a aac -ar 44100 \"{instrumentalPath}\"";
+    //     _logger.LogInformation("FFmpeg command: {command}", command1);
+    //     var conversion = await FFmpeg.Conversions.New()
+    //         .AddParameter(command1)
+    //         .Start();
+
+    //     if (!File.Exists(instrumentalPath) || new FileInfo(instrumentalPath).Length == 0)
+    //     {
+    //         var command2 = $"-i \"{inputAudioPath}\" -vn -af \"pan=stereo\\|c0=0.5*FL+0.5*BL+0.3*FC\\|c1=0.5*FR+0.5*BR+0.3*FC\" -c:a aac -ar 44100 \"{instrumentalPath}\"";
+    //         _logger.LogInformation("FFmpeg command (fallback): {command}", command2);
+    //         var altConversion = await FFmpeg.Conversions.New()
+    //             .AddParameter(command2)
+    //             .Start();
+    //     }
+
+    //     return instrumentalPath;
+    // }
+
     public async Task<string> RemoveVocalsAsync(string inputAudioPath)
     {
-        string instrumentalPath = Path.ChangeExtension(inputAudioPath, "_instrumental.mp4");
+        string instrumentalPath = Path.ChangeExtension(inputAudioPath, "_instrumental.mp3");
 
-        // Use FFmpeg to remove vocals and encode as AAC in an MP4 container
-        var command1 = $"-i \"{inputAudioPath}\" -vn -af pan=stereo|c0=FL-0.5*FC|c1=FR-0.5*FC -c:a aac -ar 44100 \"{instrumentalPath}\"";
-        _logger.LogInformation("FFmpeg command: {command}", command1);
-        var conversion = await FFmpeg.Conversions.New()
-            .AddParameter(command1)
+        var command = $"-i \"{inputAudioPath}\" -vn -af \"pan=stereo|c0=FL-FR|c1=FR-FL\" -c:a mp3 \"{instrumentalPath}\"";
+
+        _logger.LogInformation("FFmpeg command: {command}", command);
+
+        await FFmpeg.Conversions.New()
+            .AddParameter(command)
             .Start();
-
-        if (!File.Exists(instrumentalPath) || new FileInfo(instrumentalPath).Length == 0)
-        {
-            var command2 = $"-i \"{inputAudioPath}\" -vn -af pan=stereo|c0=0.5*FL+0.5*BL+0.3*FC|c1=0.5*FR+0.5*BR+0.3*FC -c:a aac -ar 44100 \"{instrumentalPath}\"";
-            _logger.LogInformation("FFmpeg command: {command}", command2);
-            var altConversion = await FFmpeg.Conversions.New()
-                .AddParameter(command2)
-                .Start();
-        }
 
         return instrumentalPath;
     }
