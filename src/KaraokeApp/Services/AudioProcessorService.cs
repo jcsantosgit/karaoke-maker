@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System;
 
 public class AudioProcessorService
 {
@@ -108,6 +109,10 @@ public class AudioProcessorService
     {
         if (_vocalRemover == "demucs")
         {
+            // Log the PATH environment variable
+            var path = Environment.GetEnvironmentVariable("PATH");
+            _logger.LogInformation("PATH environment variable: {path}", path);
+
             // Use Demucs to separate vocals
             var process = new Process
             {
