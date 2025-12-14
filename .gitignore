@@ -1,8 +1,9 @@
 # C#/.NET
 bin/
 obj/
-uploads/
 publish/
+[Bb]in/
+[Oo]bj/
 
 # Visual Studio
 .vs/
@@ -10,12 +11,16 @@ publish/
 *.user
 *.userosscache
 *.sln.docstates
+*.userprefs
 
 # Rider
 .idea/
 
 # Mac
 .DS_Store
+
+# Linux
+*~
 
 # NuGet
 packages/
@@ -25,7 +30,42 @@ packages/
 logs/
 *.log
 
-# Others
-*.swp
+# Uploads folder
+uploads/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Audio and video files
 *.mp3
 *.mp4
+*.wav
+*.flv
+*.mov
+*.avi
+*.mkv
+*.m4a
+
+# Others
+*.swp
+
+# macOS
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+Thumbs.db
+
+# Windows
+ehthumbs.db
