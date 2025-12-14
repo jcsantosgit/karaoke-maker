@@ -42,8 +42,7 @@ RUN curl -fsSL https://packages.microsoft.com/config/ubuntu/22.04/packages-micro
 # Install Demucs
 RUN python3 -m venv /opt/demucs-venv \
     && /opt/demucs-venv/bin/pip install --upgrade pip \
-    && /opt/demucs-venv/bin/pip install demucs \
-    && ln -s /opt/demucs-venv/bin/demucs /usr/local/bin/demucs
+    && /opt/demucs-venv/bin/pip install demucs     && /opt/demucs-venv/bin/pip install torchcodec     && ln -s /opt/demucs-venv/bin/demucs /usr/local/bin/demucs
 
 # Nginx config
 COPY nginx.conf /etc/nginx/sites-available/karaoke.conf

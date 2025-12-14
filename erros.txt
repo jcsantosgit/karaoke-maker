@@ -1,0 +1,24 @@
+100%|██████████| 80.2M/80.2M [00:05<00:00, 14.2MB/s]is installed and in the system's PATH. Error: 
+100%|████████████████████████████████████████████████████████████████████████| 64.35/64.35 [00:29<00:00,  2.21seconds/s]
+Traceback (most recent call last):
+  File "/opt/demucs-venv/lib/python3.10/site-packages/torchaudio/_torchcodec.py", line 246, in save_with_torchcodec
+    from torchcodec.encoders import AudioEncoder
+ModuleNotFoundError: No module named 'torchcodec'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/bin/demucs", line 7, in <module>
+    sys.exit(main())
+  File "/opt/demucs-venv/lib/python3.10/site-packages/demucs/separate.py", line 206, in main
+    save_audio(sources.pop(model.sources.index(args.stem)), str(stem), **kwargs)
+  File "/opt/demucs-venv/lib/python3.10/site-packages/demucs/audio.py", line 260, in save_audio
+    ta.save(str(path), wav, sample_rate=samplerate,
+  File "/opt/demucs-venv/lib/python3.10/site-packages/torchaudio/__init__.py", line 178, in save
+    return save_with_torchcodec(
+  File "/opt/demucs-venv/lib/python3.10/site-packages/torchaudio/_torchcodec.py", line 248, in save_with_torchcodec
+    raise ImportError(
+ImportError: TorchCodec is required for save_with_torchcodec. Please install torchcodec to use this function.
+
+Stack trace:    at AudioProcessorService.RemoveVocalsAsync(String inputAudioPath) in /src/Services/AudioProcessorService.cs:line 138
+   at AudioController.Upload(IFormFile audioFile, String language) in /src/Controllers/AudioController.cs:line 52
