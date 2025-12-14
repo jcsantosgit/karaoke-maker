@@ -22,6 +22,8 @@ public class AudioController : Controller
     }
 
     [HttpPost]
+    [RequestSizeLimit(500_000_000)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 500_000_000)]
     public async Task<IActionResult> Upload(IFormFile audioFile, string language)
     {
         if (audioFile == null || audioFile.Length == 0 || !audioFile.FileName.EndsWith(".mp3"))

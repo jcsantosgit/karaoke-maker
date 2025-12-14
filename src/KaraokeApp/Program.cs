@@ -25,10 +25,10 @@ try
     // Register AudioProcessorService
     builder.Services.AddScoped<AudioProcessorService>();
 
-    // Support for large uploads (e.g., 100MB)
+    // Support for large uploads (e.g., 500MB)
     builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
     {
-        options.MultipartBodyLengthLimit = 100 * 1024 * 1024; // 100 MB
+        options.MultipartBodyLengthLimit = 500 * 1024 * 1024; // 100 MB
     });
 
     var app = builder.Build();

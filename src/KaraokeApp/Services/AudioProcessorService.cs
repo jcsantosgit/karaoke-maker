@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 public class AudioProcessorService
 {
@@ -16,6 +17,7 @@ public class AudioProcessorService
     private readonly int _videoHeight;
     private readonly ILogger<AudioProcessorService> _logger;
     private readonly IConfiguration _configuration;
+    private readonly string _vocalRemover;
 
     public AudioProcessorService(IConfiguration configuration, ILogger<AudioProcessorService> logger)
     {
@@ -24,6 +26,7 @@ public class AudioProcessorService
         _videoHeight = int.Parse(configuration["Video:Height"] ?? "720");
         _logger = logger;
         _configuration = configuration;
+        _vocalRemover = configuration["Audio:VocalRemover"] ?? "ffmpeg";
     }
 
     public async Task InitializeAsync()
@@ -87,8 +90,7 @@ public class AudioProcessorService
             srtBuilder.AppendLine(currentSegment.Text.Trim());
             if (nextSegment != null)
             {
-                srtBuilder.AppendLine();
-                srtBuilder.AppendLine(@"...." + @"{\fs18}" + nextSegment.Text.Trim() + @"....");
+                srtBuilder.AppendLine(@"{\fs18}" + nextSegment.Text.Trim() + @"}");
             }
             srtBuilder.AppendLine();
         }
@@ -102,42 +104,80 @@ public class AudioProcessorService
         return srtPath;
     }
 
-    // public async Task<string> RemoveVocalsAsync(string inputAudioPath)
-    // {
-    //     string instrumentalPath = Path.ChangeExtension(inputAudioPath, "_instrumental.mp4");
-
-    //     // Use FFmpeg to remove vocals and encode as AAC in an MP4 container
-    //     var command1 = $"-i \"{inputAudioPath}\" -vn -af \"pan=stereo\\|c0=FL-0.5*FC\\|c1=FR-0.5*FC\" -c:a aac -ar 44100 \"{instrumentalPath}\"";
-    //     _logger.LogInformation("FFmpeg command: {command}", command1);
-    //     var conversion = await FFmpeg.Conversions.New()
-    //         .AddParameter(command1)
-    //         .Start();
-
-    //     if (!File.Exists(instrumentalPath) || new FileInfo(instrumentalPath).Length == 0)
-    //     {
-    //         var command2 = $"-i \"{inputAudioPath}\" -vn -af \"pan=stereo\\|c0=0.5*FL+0.5*BL+0.3*FC\\|c1=0.5*FR+0.5*BR+0.3*FC\" -c:a aac -ar 44100 \"{instrumentalPath}\"";
-    //         _logger.LogInformation("FFmpeg command (fallback): {command}", command2);
-    //         var altConversion = await FFmpeg.Conversions.New()
-    //             .AddParameter(command2)
-    //             .Start();
-    //     }
-
-    //     return instrumentalPath;
-    // }
-
     public async Task<string> RemoveVocalsAsync(string inputAudioPath)
     {
-        string instrumentalPath = Path.ChangeExtension(inputAudioPath, "_instrumental.mp3");
+        if (_vocalRemover == "demucs")
+        {
+            // Use Demucs to separate vocals
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "demucs",
+                    Arguments = $"--two-stems=vocals \"{inputAudioPath}\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                }
+            };
+            _logger.LogInformation("Starting Demucs process: {FileName} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            process.Start();
+            string output = await process.StandardOutput.ReadToEndAsync();
+            string error = await process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
 
-        var command = $"-i \"{inputAudioPath}\" -vn -af \"pan=stereo|c0=FL-FR|c1=FR-FL\" -c:a mp3 \"{instrumentalPath}\"";
+            if (process.ExitCode != 0)
+            {
+                _logger.LogError("Demucs failed with exit code {exitCode}: {error}", process.ExitCode, error);
+                throw new Exception($"Demucs failed. Make sure it is installed and in the system's PATH. Error: {error}");
+            }
+            _logger.LogInformation("Demucs output: {output}", output);
 
-        _logger.LogInformation("FFmpeg command: {command}", command);
+            var separatedPath = Path.Combine("separated", "htdemucs", Path.GetFileNameWithoutExtension(inputAudioPath));
+            var noVocalsPath = Path.Combine(separatedPath, "no_vocals.wav");
 
-        await FFmpeg.Conversions.New()
-            .AddParameter(command)
-            .Start();
+            if (!File.Exists(noVocalsPath))
+            {
+                throw new Exception("Demucs did not produce the no_vocals.wav file.");
+            }
 
-        return instrumentalPath;
+            string instrumentalPath = Path.ChangeExtension(inputAudioPath, "_instrumental.mp4");
+
+            // Convert the no_vocals.wav to MP4
+            var command = $"-i \"{noVocalsPath}\" -vn -c:a aac -ar 44100 \"{instrumentalPath}\"";
+            _logger.LogInformation("FFmpeg command: {command}", command);
+            var conversion = await FFmpeg.Conversions.New()
+                .AddParameter(command)
+                .Start();
+
+            // Clean up Demucs output folder
+            Directory.Delete(separatedPath, true);
+
+            return instrumentalPath;
+        }
+        else
+        {
+            // Use FFmpeg to remove vocals
+            string instrumentalPath = Path.ChangeExtension(inputAudioPath, "_instrumental.mp4");
+
+            var command1 = $"-i \"{inputAudioPath}\" -vn -af pan=stereo|c0=FL-0.5*FC|c1=FR-0.5*FC -c:a aac -ar 44100 \"{instrumentalPath}\"";
+            _logger.LogInformation("FFmpeg command: {command}", command1);
+            var conversion = await FFmpeg.Conversions.New()
+                .AddParameter(command1)
+                .Start();
+
+            if (!File.Exists(instrumentalPath) || new FileInfo(instrumentalPath).Length == 0)
+            {
+                var command2 = $"-i \"{inputAudioPath}\" -vn -af pan=stereo|c0=0.5*FL+0.5*BL+0.3*FC|c1=0.5*FR+0.5*BR+0.3*FC -c:a aac -ar 44100 \"{instrumentalPath}\"";
+                _logger.LogInformation("FFmpeg command (fallback): {command}", command2);
+                var altConversion = await FFmpeg.Conversions.New()
+                    .AddParameter(command2)
+                    .Start();
+            }
+
+            return instrumentalPath;
+        }
     }
 
     public async Task<string> GenerateBlackVideoWithAudioAndSubtitlesAsync(string instrumentalAudioPath, string srtPath)

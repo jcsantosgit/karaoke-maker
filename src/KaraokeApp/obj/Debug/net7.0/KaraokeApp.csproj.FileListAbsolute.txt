@@ -70,3 +70,13 @@
 /home/joao/Projects/karaoke-project/src/KaraokeApp/bin/Debug/net7.0/System.Text.Json.dll
 /home/joao/Projects/karaoke-project/src/KaraokeApp/bin/Debug/net7.0/runtimes/browser/lib/net7.0/System.Text.Encodings.Web.dll
 /home/joao/Projects/karaoke-project/src/KaraokeApp/bin/Debug/net7.0/WhisperModels/ggml-base.bin
+/home/joao/Projects/karaoke-project/src/KaraokeApp/bin/Debug/net7.0/publish/publish/web.config
+/home/joao/Projects/karaoke-project/src/KaraokeApp/bin/Debug/net7.0/publish/web.config
+/home/joao/Projects/karaoke-project/src/KaraokeApp/bin/Debug/net7.0/publish/appsettings.Development.json
+/home/joao/Projects/karaoke-project/src/KaraokeApp/bin/Debug/net7.0/publish/appsettings.json
+/home/joao/Projects/karaoke-project/src/KaraokeApp/bin/Debug/net7.0/publish/KaraokeApp.deps.json
+/home/joao/Projects/karaoke-project/src/KaraokeApp/bin/Debug/net7.0/publish/KaraokeApp.runtimeconfig.json
+/home/joao/Projects/karaoke-project/src/KaraokeApp/bin/Debug/net7.0/publish/publish/appsettings.Development.json
+/home/joao/Projects/karaoke-project/src/KaraokeApp/bin/Debug/net7.0/publish/publish/appsettings.json
+/home/joao/Projects/karaoke-project/src/KaraokeApp/bin/Debug/net7.0/publish/publish/KaraokeApp.deps.json
+/home/joao/Projects/karaoke-project/src/KaraokeApp/bin/Debug/net7.0/publish/publish/KaraokeApp.runtimeconfig.json
