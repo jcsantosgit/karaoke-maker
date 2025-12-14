@@ -2,6 +2,7 @@
 bin/
 obj/
 uploads/
+publish/
 
 # Visual Studio
 .vs/
@@ -26,3 +27,5 @@ logs/
 
 # Others
 *.swp
+*.mp3
+*.mp4
