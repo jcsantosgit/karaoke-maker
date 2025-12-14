@@ -66,7 +66,6 @@ public class AudioProcessorService
             modelFilePath = Path.Combine(_modelPath, "ggml-base.bin");
         }
 
-
         // Transcription with Whisper.NET
         var segments = new List<Whisper.net.SegmentData>();
         using var whisperFactory = WhisperFactory.FromPath(modelFilePath);
@@ -91,7 +90,8 @@ public class AudioProcessorService
             srtBuilder.AppendLine(currentSegment.Text.Trim());
             if (nextSegment != null)
             {
-                srtBuilder.AppendLine(@"{\fs18}" + nextSegment.Text.Trim() + @"}");
+                // srtBuilder.AppendLine(@"{\fs18}" + nextSegment.Text.Trim() + @"}");
+                srtBuilder.AppendLine(@"..." + @"{\fs18}" + nextSegment.Text.Trim() + @"...");
             }
             srtBuilder.AppendLine();
         }
