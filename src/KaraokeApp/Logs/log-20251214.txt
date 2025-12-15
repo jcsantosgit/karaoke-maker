@@ -148,3 +148,7 @@ System.IO.IOException: Failed to bind to address http://127.0.0.1:5000: address 
 2025-12-14 14:37:02.814 -03:00 [ERR] Model file not found: WhisperModels/ggml-base-pt.bin
 2025-12-14 14:37:09.509 -03:00 [INF] FFmpeg command: -i "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/6ed37363-d66d-4187-99a9-cf372692942f.mp3" -vn -af pan=stereo|c0=FL-0.5*FC|c1=FR-0.5*FC -c:a aac -ar 44100 "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/6ed37363-d66d-4187-99a9-cf372692942f._instrumental.mp4"
 2025-12-14 14:37:10.583 -03:00 [INF] FFmpeg command: -f lavfi -i color=c=black:s=1280x720:d=59.02 -i "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/6ed37363-d66d-4187-99a9-cf372692942f._instrumental.mp4" -vf "subtitles=filename='/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/6ed37363-d66d-4187-99a9-cf372692942f.srt':force_style='Alignment=5,Fontsize=24,PrimaryColour=&H00FFFF'" -c:v libx264 -c:a copy -b:v 2M -preset fast -shortest "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/6ed37363-d66d-4187-99a9-cf372692942f._karaoke.mp4"
+2025-12-14 21:33:44.523 -03:00 [WRN] Failed to determine the https port for redirect.
+2025-12-14 21:34:23.905 -03:00 [INF] Shut down complete
+2025-12-14 21:40:17.824 -03:00 [WRN] Failed to determine the https port for redirect.
+2025-12-14 21:40:55.670 -03:00 [INF] FFmpeg command: -i "/home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/7018aed1-643a-4ded-a787-f2b359def755.mp3" -vn -acodec pcm_s16le -ar 16000 -ac 1 "/tmp/tmpmdZ1PN.wav"

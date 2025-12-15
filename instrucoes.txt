@@ -1,3 +1,15 @@
+Para atender às suas solicitações de adicionar efeitos visuais (ondas sonoras) e melhorar a precisão da transcrição (ortografia), precisamos fazer alterações principalmente no arquivo `AudioProcessorService.cs` e um pequeno ajuste no `KaraokeApp.csproj` para suportar modelos de IA mais robustos.
+
+Aqui está o resumo do que foi alterado e por que:
+
+1.  **Melhoria na Transcrição (Correção Ortográfica):** O modelo `base` (usado atualmente) é muito simples e tende a errar a ortografia e pontuação em português. Alterei o código para priorizar o modelo `medium` (médio). **Atenção:** Você precisará baixar o arquivo do modelo `ggml-medium.bin`.
+2.  **Efeito Visual (Ondas):** Substituí a geração de vídeo de fundo preto pelo filtro `showwaves` do FFmpeg. Isso criará uma animação de ondas sincronizada com o áudio instrumental.
+
+### 1\. AudioProcessorService.cs (Modificado)
+
+Substitua todo o conteúdo do seu arquivo atual por este.
+
+```csharp
 using Whisper.net;
 using Whisper.net.Ggml;
 using Xabe.FFmpeg;
@@ -46,11 +58,11 @@ public class AudioProcessorService
         // ALTERAÇÃO 1: Melhoria da Precisão
         // Tenta usar o modelo Medium (melhor ortografia) antes do Base.
         // O modelo Medium requer mais RAM, mas erra muito menos.
-        string modelName = "ggml-medium.bin";
-
-        // Se quiser especificidade por lingua, pode manter a lógica abaixo,
+        string modelName = "ggml-medium.bin"; 
+        
+        // Se quiser especificidade por lingua, pode manter a lógica abaixo, 
         // mas o medium multilingue geral já é excelente.
-        if (language == "en") modelName = "ggml-medium-en.bin";
+        if (language == "en") modelName = "ggml-medium-en.bin"; 
 
         string modelFilePath = Path.Combine(_modelPath, modelName);
 
@@ -60,7 +72,7 @@ public class AudioProcessorService
             _logger.LogWarning("Modelo Medium não encontrado em {path}. Usando fallback para Base.", modelFilePath);
             modelFilePath = Path.Combine(_modelPath, "ggml-base.bin");
         }
-
+        
         if (!File.Exists(modelFilePath))
         {
             throw new FileNotFoundException($"Nenhum modelo Whisper encontrado em {_modelPath}. Baixe o ggml-medium.bin.");
@@ -68,7 +80,7 @@ public class AudioProcessorService
 
         var segments = new List<Whisper.net.SegmentData>();
         using var whisperFactory = WhisperFactory.FromPath(modelFilePath);
-
+        
         // Configurações para melhorar a pontuação e contexto
         using var processor = whisperFactory.CreateBuilder()
             .WithLanguage(language)
@@ -90,7 +102,7 @@ public class AudioProcessorService
             srtBuilder.AppendLine((i + 1).ToString());
             srtBuilder.AppendLine($"{FormatTime(currentSegment.Start)} --> {FormatTime(currentSegment.End)}");
             srtBuilder.AppendLine(currentSegment.Text.Trim());
-
+            
             // Lógica de mostrar a próxima frase (karaoke style)
             if (nextSegment != null)
             {
@@ -156,7 +168,7 @@ public class AudioProcessorService
 
         // Tratamento do caminho do SRT para o filtro do FFmpeg (escape de caracteres)
         var srtPathForFilter = srtPath.Replace(@"\", @"\\").Replace(":", @"\:");
-
+        
         // Estilo da legenda
         // PrimaryColour=&H00FFFF (Amarelo/Ciano) - Formato BGR no ASS/SSA (Hex invertido)
         // Outline=1 (Borda preta para legibilidade sobre as ondas)
@@ -168,13 +180,13 @@ public class AudioProcessorService
         // mode=line -> Tipo de onda
         // colors=cyan -> Cor da onda
         // [v]subtitles -> Aplica a legenda sobre o vídeo de ondas gerado
-
+        
         var filterComplex = $"[0:a]showwaves=s={_videoWidth}x{_videoHeight}:mode=line:colors=cyan:rate=25[waves];[waves]subtitles=filename='{srtPathForFilter}':force_style='{subtitleStyle}'[outv]";
 
         var command = $"-i \"{instrumentalAudioPath}\" -filter_complex \"{filterComplex}\" -map \"[outv]\" -map 0:a -c:v libx264 -pix_fmt yuv420p -b:v 2M -preset fast \"{outputPath}\"";
 
         _logger.LogInformation("FFmpeg command (Visual Effects): {command}", command);
-
+        
         await FFmpeg.Conversions.New()
             .AddParameter(command)
             .Start();
@@ -187,3 +199,60 @@ public class AudioProcessorService
         return ts.ToString(@"hh\:mm\:ss\,fff");
     }
 }
+```
+
+### 2\. KaraokeApp.csproj (Modificado)
+
+Modifiquei apenas a seção `ItemGroup` onde estão os modelos. É **crucial** que você baixe o modelo novo.
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Whisper.Net" Version="1.5.0" />
+    <PackageReference Include="Whisper.Net.Runtime" Version="1.5.0" />
+    <PackageReference Include="Xabe.FFmpeg" Version="5.2.4" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="WhisperModels/*.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>
+```
+
+### Passo Importante: Baixar o Modelo
+
+Para que a correção ortográfica funcione, você **não pode** usar apenas o modelo `base`. O código agora procura pelo `ggml-medium.bin`.
+
+1.  Vá até o site [HuggingFace - Whisper GGML Models](https://huggingface.co/ggerganov/whisper.cpp/tree/main) ou use o script de download do Whisper.
+2.  Baixe o arquivo **`ggml-medium.bin`** (aproximadamente 1.5GB).
+3.  Coloque este arquivo dentro da pasta `src/KaraokeApp/WhisperModels/` (junto com o `ggml-base.bin` que você já tem).
+
+### Explicação das Mudanças
+
+1.  **`GenerateSrtFromAudioAsync`**:
+
+      * Mudei a prioridade para carregar `ggml-medium.bin`. Modelos maiores entendem o contexto da frase, diferenciando "assento" de "acento" e pontuando corretamente perguntas e afirmações.
+      * Adicionei um tratamento de erro: se ele não achar o modelo Medium, ele avisa no log e tenta usar o Base.
+
+2.  **`GenerateBlackVideoWithAudioAndSubtitlesAsync`**:
+
+      * O comando antigo usava `color=c=black`.
+      * O novo comando usa `showwaves`. Ele lê a entrada de áudio e desenha linhas ciano (`colors=cyan`) que pulam conforme a batida da música.
+      * Adicionei `pix_fmt yuv420p` para garantir compatibilidade do vídeo com players (como QuickTime ou Windows Media Player) e navegadores.
+
+3.  **Visual das Legendas**:
+
+      * Adicionei `Outline=1` e `BackColour` (caixa semitransparente) nas legendas. Como o fundo agora tem ondas se mexendo, a legenda precisa de uma borda ou fundo para não ficar ilegível quando a onda passar por trás do texto.
