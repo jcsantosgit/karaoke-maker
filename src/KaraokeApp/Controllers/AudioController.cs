@@ -24,7 +24,7 @@ public class AudioController : Controller
     [HttpPost]
     [RequestSizeLimit(500_000_000)]
     [RequestFormLimits(MultipartBodyLengthLimit = 500_000_000)]
-    public async Task<IActionResult> Upload(IFormFile audioFile, string language)
+    public async Task<IActionResult> Upload(IFormFile audioFile, string language, string? musicTitle, string? artistName)
     {
         if (audioFile == null || audioFile.Length == 0 || !audioFile.FileName.EndsWith(".mp3"))
             return BadRequest("Selecione um arquivo MP3.");
@@ -52,7 +52,7 @@ public class AudioController : Controller
             instrumentalPath = await _service.RemoveVocalsAsync(audioPath);
 
             // Step 3: Generate video with black background, instrumental audio and subtitles
-            string outputPath = await _service.GenerateBlackVideoWithAudioAndSubtitlesAsync(instrumentalPath, srtPath);
+            string outputPath = await _service.GenerateBlackVideoWithAudioAndSubtitlesAsync(instrumentalPath, srtPath, musicTitle, artistName);
 
             // Clean up temporary files
             System.IO.File.Delete(audioPath);

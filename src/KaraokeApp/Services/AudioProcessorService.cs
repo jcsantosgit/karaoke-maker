@@ -150,26 +150,42 @@ public class AudioProcessorService
         }
     }
 
-    public async Task<string> GenerateBlackVideoWithAudioAndSubtitlesAsync(string instrumentalAudioPath, string srtPath)
+    public async Task<string> GenerateBlackVideoWithAudioAndSubtitlesAsync(string instrumentalAudioPath, string srtPath, string? musicTitle = "", string? artistName = "")
     {
         string outputPath = Path.ChangeExtension(instrumentalAudioPath, ".mp4").Replace("_instrumental", "_karaoke");
 
         // Tratamento do caminho do SRT para o filtro do FFmpeg (escape de caracteres)
         var srtPathForFilter = srtPath.Replace(@"\", @"\\").Replace(":", @"\:");
 
+        // Definir título e artista, ou usar valor padrão se não informados
+        var title = string.IsNullOrEmpty(musicTitle?.Trim()) ? "Música" : musicTitle?.Trim();
+        var artist = string.IsNullOrEmpty(artistName?.Trim()) ? "Artista desconhecido" : artistName?.Trim();
+        string songInfo = $"{title} - {artist}";
+
         // Estilo da legenda
         // PrimaryColour=&H00FFFF (Amarelo/Ciano) - Formato BGR no ASS/SSA (Hex invertido)
         // Outline=1 (Borda preta para legibilidade sobre as ondas)
         string subtitleStyle = "Alignment=2,Fontsize=24,PrimaryColour=&H00FFFF,Outline=1,BackColour=&H80000000,BorderStyle=3";
 
-        // ALTERAÇÃO 2: Efeitos Visuais (Waveform)
-        // Usamos filter_complex para gerar vídeo a partir do áudio
+        // Estilo do título da música
+        string titleStyle = "Alignment=1,Fontsize=32,PrimaryColour=&H00FFFFFF,Outline=1,BackColour=&H80000000,BorderStyle=3";
+
+        // Criar um arquivo temporário SRT com o título da música e artista
+        string titleSrtPath = Path.GetTempFileName() + ".srt";
+        await CreateTitleSrtFile(titleSrtPath, songInfo, _videoWidth, _videoHeight);
+
+        // Tratamento do caminho do SRT de título para o filtro do FFmpeg (escape de caracteres)
+        var titleSrtPathForFilter = titleSrtPath.Replace(@"\", @"\\").Replace(":", @"\:");
+
+        // ALTERAÇÃO 2: Efeitos Visuais (Waveform) com título da música no início do vídeo
+        // Usamos filter_complex para:
         // [0:a]showwaves -> Gera as ondas baseadas no som
         // mode=line -> Tipo de onda
         // colors=cyan -> Cor da onda
-        // [v]subtitles -> Aplica a legenda sobre o vídeo de ondas gerado
+        // [v]subtitles -> Aplica a legenda principal (letras da música)
+        // [title]subtitles -> Aplica a legenda com dados da música no início do vídeo
 
-        var filterComplex = $"[0:a]showwaves=s={_videoWidth}x{_videoHeight}:mode=line:colors=cyan:rate=25[waves];[waves]subtitles=filename='{srtPathForFilter}':force_style='{subtitleStyle}'[outv]";
+        var filterComplex = $"[0:a]showwaves=s={_videoWidth}x{_videoHeight}:mode=line:colors=cyan:rate=25,format=yuv420p[waves];[waves]subtitles=filename='{titleSrtPathForFilter}':force_style='{titleStyle}'[titlevid];[titlevid]subtitles=filename='{srtPathForFilter}':force_style='{subtitleStyle}'[outv]";
 
         var command = $"-i \"{instrumentalAudioPath}\" -filter_complex \"{filterComplex}\" -map \"[outv]\" -map 0:a -c:v libx264 -pix_fmt yuv420p -b:v 2M -preset fast \"{outputPath}\"";
 
@@ -179,7 +195,19 @@ public class AudioProcessorService
             .AddParameter(command)
             .Start();
 
+        // Limpar o arquivo temporário de título
+        if (File.Exists(titleSrtPath))
+            File.Delete(titleSrtPath);
+
         return outputPath;
+    }
+
+    private async Task CreateTitleSrtFile(string srtPath, string titleText, int videoWidth, int videoHeight)
+    {
+        // Criar SRT com o título e artista que aparece nos primeiros segundos do vídeo
+        // Posiciona o texto no canto superior esquerdo
+        string srtContent = $@"1 00:00:00,000 --> 00:00:05,000 {{\pos(100,50)}} {titleText}";
+        await File.WriteAllTextAsync(srtPath, srtContent);
     }
 
     private string FormatTime(TimeSpan ts)

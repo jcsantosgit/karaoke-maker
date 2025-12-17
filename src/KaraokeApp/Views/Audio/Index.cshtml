@@ -45,6 +45,16 @@
                     </div>
 
                     <form id="upload-form" action="/Audio/Upload" method="post" enctype="multipart/form-data">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="musicTitle" class="block text-sm font-medium text-gray-300 mb-2">Título da Música</label>
+                                <input type="text" id="musicTitle" name="musicTitle" class="w-full bg-black/40 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-brand-purple focus:outline-none focus:ring-1 focus:ring-brand-purple" placeholder="Digite o título da música">
+                            </div>
+                            <div>
+                                <label for="artistName" class="block text-sm font-medium text-gray-300 mb-2">Nome do Artista</label>
+                                <input type="text" id="artistName" name="artistName" class="w-full bg-black/40 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-brand-purple focus:outline-none focus:ring-1 focus:ring-brand-purple" placeholder="Digite o nome do artista">
+                            </div>
+                        </div>
                         <div class="mb-4">
                             <label for="language" class="block text-sm font-medium text-gray-300 mb-2">Idioma do Áudio</label>
                             <select id="language" name="language" class="w-full bg-black/40 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-brand-purple focus:outline-none focus:ring-1 focus:ring-brand-purple">

@@ -81,6 +81,8 @@ async function handleFileUpload(file) {
     const step2 = document.getElementById('step-2');
     const step3 = document.getElementById('step-3');
     const language = document.getElementById('language').value;
+    const musicTitle = document.getElementById('musicTitle').value;
+    const artistName = document.getElementById('artistName').value;
 
     function setStepActive(el) {
         el.classList.remove('text-gray-500');
@@ -100,6 +102,8 @@ async function handleFileUpload(file) {
     const formData = new FormData();
     formData.append('audioFile', file);
     formData.append('language', language);
+    formData.append('musicTitle', musicTitle);
+    formData.append('artistName', artistName);
 
     // Simulate progress for UI
     let progress = 0;
@@ -146,7 +150,7 @@ async function handleFileUpload(file) {
             }
 
             const downloadUrl = URL.createObjectURL(blob);
-            
+
             document.getElementById('download-filename').innerText = filename;
             document.getElementById('download-filesize').innerText = `${(blob.size / 1024 / 1024).toFixed(2)} MB`;
             document.getElementById('download-button').href = downloadUrl;
