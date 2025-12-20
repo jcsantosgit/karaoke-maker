@@ -35,7 +35,7 @@ public class AudioProcessorService
         await Task.Delay(1);
     }
 
-    public async Task<string> GenerateSrtFromAudioAsync(string audioPath, string language)
+    public async Task<string> GenerateAssFromAudioAsync(string audioPath, string language)
     {
         // Converte áudio para WAV temporário para o Whisper
         string wavPath = Path.ChangeExtension(Path.GetTempFileName(), ".wav");
@@ -43,18 +43,11 @@ public class AudioProcessorService
         _logger.LogInformation("FFmpeg command: {command}", command);
         await FFmpeg.Conversions.New().AddParameter(command).Start();
 
-        // ALTERAÇÃO 1: Melhoria da Precisão
-        // Tenta usar o modelo Medium (melhor ortografia) antes do Base.
-        // O modelo Medium requer mais RAM, mas erra muito menos.
         string modelName = "ggml-medium.bin";
-
-        // Se quiser especificidade por lingua, pode manter a lógica abaixo,
-        // mas o medium multilingue geral já é excelente.
         if (language == "en") modelName = "ggml-medium-en.bin";
 
         string modelFilePath = Path.Combine(_modelPath, modelName);
 
-        // Fallback para o base se o medium não existir
         if (!File.Exists(modelFilePath))
         {
             _logger.LogWarning("Modelo Medium não encontrado em {path}. Usando fallback para Base.", modelFilePath);
@@ -69,10 +62,9 @@ public class AudioProcessorService
         var segments = new List<Whisper.net.SegmentData>();
         using var whisperFactory = WhisperFactory.FromPath(modelFilePath);
 
-        // Configurações para melhorar a pontuação e contexto
         using var processor = whisperFactory.CreateBuilder()
             .WithLanguage(language)
-            .WithProbabilities() // Ajuda na precisão interna
+            .WithProbabilities()
             .Build();
 
         using var fileStream = File.OpenRead(wavPath);
@@ -81,34 +73,81 @@ public class AudioProcessorService
             segments.Add(segment);
         }
 
-        var srtBuilder = new StringBuilder();
+        File.Delete(wavPath);
+
+        // Criar arquivo ASS ao invés de SRT
+        string assPath = Path.ChangeExtension(audioPath, ".ass");
+        await CreateAssFileFromSegments(assPath, segments);
+
+        return assPath;
+    }
+
+    private async Task CreateAssFileFromSegments(string assPath, List<Whisper.net.SegmentData> segments)
+    {
+        var assBuilder = new StringBuilder();
+
+        // Cabeçalho ASS
+        assBuilder.AppendLine("[Script Info]");
+        assBuilder.AppendLine("Title: Karaoke Video");
+        assBuilder.AppendLine("ScriptType: v4.00+");
+        assBuilder.AppendLine("WrapStyle: 0");
+        assBuilder.AppendLine("ScaledBorderAndShadow: yes");
+        assBuilder.AppendLine("YCbCr Matrix: None");
+        assBuilder.AppendLine();
+
+        // Estilos
+        assBuilder.AppendLine("[V4+ Styles]");
+        assBuilder.AppendLine("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding");
+        
+        // Estilo principal do karaoke (texto no centro-baixo)
+        // PrimaryColour: Branco (&H00FFFFFF) - texto não cantado
+        // SecondaryColour: Amarelo/Dourado (&H0000FFFF) - texto sendo cantado
+        // Alignment: 2 = Centro inferior
+        assBuilder.AppendLine("Style: Karaoke,Arial,28,&H00FFFFFF,&H0000FFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,0,2,30,30,50,1");
+        
+        // Estilo para próxima linha (preview)
+        assBuilder.AppendLine("Style: Preview,Arial,28,&H00808080,&H00808080,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,2,0,2,30,30,100,1");
+        assBuilder.AppendLine();
+
+        // Eventos
+        assBuilder.AppendLine("[Events]");
+        assBuilder.AppendLine("Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text");
+
         for (int i = 0; i < segments.Count; i++)
         {
             var currentSegment = segments[i];
             var nextSegment = (i + 1 < segments.Count) ? segments[i + 1] : null;
 
-            srtBuilder.AppendLine((i + 1).ToString());
-            srtBuilder.AppendLine($"{FormatTime(currentSegment.Start)} --> {FormatTime(currentSegment.End)}");
-            srtBuilder.AppendLine(currentSegment.Text.Trim());
+            // Linha principal com efeito karaoke
+            string dialogue = $"Dialogue: 0,{FormatAssTime(currentSegment.Start)},{FormatAssTime(currentSegment.End)},Karaoke,,0,0,0,,";
+            
+            // Dividir texto em palavras e criar efeito karaoke
+            string[] words = currentSegment.Text.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            double totalDuration = (currentSegment.End - currentSegment.Start).TotalSeconds;
+            double timePerWord = totalDuration / words.Length;
 
-            // Lógica de mostrar a próxima frase (karaoke style)
+            foreach (var word in words)
+            {
+                // Converter duração para centésimos de segundo
+                int duration = (int)(timePerWord * 100);
+                dialogue += $"{{\\k{duration}}}{word} ";
+            }
+
+            assBuilder.AppendLine(dialogue.TrimEnd());
+
+            // Mostrar preview da próxima linha (estilo karaoke tradicional)
             if (nextSegment != null)
             {
-                srtBuilder.AppendLine(@"..." + @"{\fs14\c&H808080&}" + nextSegment.Text.Trim() + @"..."); // Diminuí a fonte da próxima frase e mudei pra cinza
+                string preview = $"Dialogue: 0,{FormatAssTime(currentSegment.Start)},{FormatAssTime(currentSegment.End)},Preview,,0,0,0,,{nextSegment.Text.Trim()}";
+                assBuilder.AppendLine(preview);
             }
-            srtBuilder.AppendLine();
         }
 
-        File.Delete(wavPath);
-        string srtPath = Path.ChangeExtension(audioPath, ".srt");
-        await File.WriteAllTextAsync(srtPath, srtBuilder.ToString());
-
-        return srtPath;
+        await File.WriteAllTextAsync(assPath, assBuilder.ToString());
     }
 
     public async Task<string> RemoveVocalsAsync(string inputAudioPath)
     {
-        // (Mantive a lógica original do Demucs/FFmpeg pois estava correta)
         if (_vocalRemover == "demucs")
         {
             var process = new Process
@@ -150,42 +189,26 @@ public class AudioProcessorService
         }
     }
 
-    public async Task<string> GenerateBlackVideoWithAudioAndSubtitlesAsync(string instrumentalAudioPath, string srtPath, string? musicTitle = "", string? artistName = "")
+    public async Task<string> GenerateBlackVideoWithAudioAndSubtitlesAsync(string instrumentalAudioPath, string assPath, string? musicTitle = "", string? artistName = "")
     {
         string outputPath = Path.ChangeExtension(instrumentalAudioPath, ".mp4").Replace("_instrumental", "_karaoke");
 
-        // Tratamento do caminho do SRT para o filtro do FFmpeg (escape de caracteres)
-        var srtPathForFilter = srtPath.Replace(@"\", @"\\").Replace(":", @"\:");
+        // Tratamento do caminho do ASS para o filtro do FFmpeg (escape de caracteres)
+        var assPathForFilter = assPath.Replace(@"\", @"\\").Replace(":", @"\:");
 
-        // Definir título e artista, ou usar valor padrão se não informados
+        // Definir título e artista
         var title = string.IsNullOrEmpty(musicTitle?.Trim()) ? "Música" : musicTitle?.Trim();
         var artist = string.IsNullOrEmpty(artistName?.Trim()) ? "Artista desconhecido" : artistName?.Trim();
         string songInfo = $"{title} - {artist}";
 
-        // Estilo da legenda
-        // PrimaryColour=&H00FFFF (Amarelo/Ciano) - Formato BGR no ASS/SSA (Hex invertido)
-        // Outline=1 (Borda preta para legibilidade sobre as ondas)
-        string subtitleStyle = "Alignment=2,Fontsize=24,PrimaryColour=&H00FFFF,Outline=1,BackColour=&H80000000,BorderStyle=3";
+        // Criar arquivo ASS temporário com título da música
+        string titleAssPath = Path.GetTempFileName() + ".ass";
+        await CreateTitleAssFile(titleAssPath, songInfo, _videoWidth, _videoHeight);
 
-        // Estilo do título da música
-        string titleStyle = "Alignment=1,Fontsize=32,PrimaryColour=&H00FFFFFF,Outline=1,BackColour=&H80000000,BorderStyle=3";
+        var titleAssPathForFilter = titleAssPath.Replace(@"\", @"\\").Replace(":", @"\:");
 
-        // Criar um arquivo temporário SRT com o título da música e artista
-        string titleSrtPath = Path.GetTempFileName() + ".srt";
-        await CreateTitleSrtFile(titleSrtPath, songInfo, _videoWidth, _videoHeight);
-
-        // Tratamento do caminho do SRT de título para o filtro do FFmpeg (escape de caracteres)
-        var titleSrtPathForFilter = titleSrtPath.Replace(@"\", @"\\").Replace(":", @"\:");
-
-        // ALTERAÇÃO 2: Efeitos Visuais (Waveform) com título da música no início do vídeo
-        // Usamos filter_complex para:
-        // [0:a]showwaves -> Gera as ondas baseadas no som
-        // mode=line -> Tipo de onda
-        // colors=cyan -> Cor da onda
-        // [v]subtitles -> Aplica a legenda principal (letras da música)
-        // [title]subtitles -> Aplica a legenda com dados da música no início do vídeo
-
-        var filterComplex = $"[0:a]showwaves=s={_videoWidth}x{_videoHeight}:mode=line:colors=cyan:rate=25,format=yuv420p[waves];[waves]subtitles=filename='{titleSrtPathForFilter}':force_style='{titleStyle}'[titlevid];[titlevid]subtitles=filename='{srtPathForFilter}':force_style='{subtitleStyle}'[outv]";
+        // Filter complex: waveform + título + legendas com karaoke
+        var filterComplex = $"[0:a]showwaves=s={_videoWidth}x{_videoHeight}:mode=line:colors=cyan:rate=25,format=yuv420p[waves];[waves]ass='{titleAssPathForFilter}'[titlevid];[titlevid]ass='{assPathForFilter}'[outv]";
 
         var command = $"-i \"{instrumentalAudioPath}\" -filter_complex \"{filterComplex}\" -map \"[outv]\" -map 0:a -c:v libx264 -pix_fmt yuv420p -b:v 2M -preset fast \"{outputPath}\"";
 
@@ -195,19 +218,42 @@ public class AudioProcessorService
             .AddParameter(command)
             .Start();
 
-        // Limpar o arquivo temporário de título
-        if (File.Exists(titleSrtPath))
-            File.Delete(titleSrtPath);
+        // Limpar arquivo temporário
+        if (File.Exists(titleAssPath))
+            File.Delete(titleAssPath);
 
         return outputPath;
     }
 
-    private async Task CreateTitleSrtFile(string srtPath, string titleText, int videoWidth, int videoHeight)
+    private async Task CreateTitleAssFile(string assPath, string titleText, int videoWidth, int videoHeight)
     {
-        // Criar SRT com o título e artista que aparece nos primeiros segundos do vídeo
-        // Posiciona o texto no canto superior esquerdo
-        string srtContent = $@"1 00:00:00,000 --> 00:00:05,000 {{\pos(100,50)}} {titleText}";
-        await File.WriteAllTextAsync(srtPath, srtContent);
+        var assBuilder = new StringBuilder();
+
+        // Cabeçalho
+        assBuilder.AppendLine("[Script Info]");
+        assBuilder.AppendLine("Title: Song Title");
+        assBuilder.AppendLine("ScriptType: v4.00+");
+        assBuilder.AppendLine();
+
+        // Estilo do título (topo, esquerda, branco, grande)
+        assBuilder.AppendLine("[V4+ Styles]");
+        assBuilder.AppendLine("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding");
+        // Alignment 7 = Topo Esquerda
+        assBuilder.AppendLine("Style: Title,Arial,28,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,0,7,50,10,50,1");
+        assBuilder.AppendLine();
+
+        // Evento
+        assBuilder.AppendLine("[Events]");
+        assBuilder.AppendLine("Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text");
+        assBuilder.AppendLine($"Dialogue: 0,0:00:00.00,0:00:05.00,Title,,0,0,0,,{titleText}");
+
+        await File.WriteAllTextAsync(assPath, assBuilder.ToString());
+    }
+
+    private string FormatAssTime(TimeSpan ts)
+    {
+        // Formato ASS: H:MM:SS.CC (centésimos)
+        return $"{(int)ts.TotalHours}:{ts.Minutes:D2}:{ts.Seconds:D2}.{ts.Milliseconds / 10:D2}";
     }
 
     private string FormatTime(TimeSpan ts)

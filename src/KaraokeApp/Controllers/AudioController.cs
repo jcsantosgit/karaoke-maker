@@ -32,7 +32,6 @@ public class AudioController : Controller
         string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
         Directory.CreateDirectory(uploadsFolder);
 
-        // Generate a unique file name to prevent conflicts
         var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(audioFile.FileName)}";
         string audioPath = Path.Combine(uploadsFolder, uniqueFileName);
 
@@ -42,35 +41,55 @@ public class AudioController : Controller
         }
 
         string instrumentalPath = null;
-        string srtPath = null;
+        string assPath = null; // Mudado de srtPath para assPath
         try
         {
-            // Step 1: Generate SRT from audio
-            srtPath = await _service.GenerateSrtFromAudioAsync(audioPath, language);
+            // Step 1: Gerar arquivo ASS com efeito karaoke do áudio
+            assPath = await _service.GenerateAssFromAudioAsync(audioPath, language);
 
-            // Step 2: Remove vocals to create instrumental track
+            // Step 2: Remover vocais para criar faixa instrumental
             instrumentalPath = await _service.RemoveVocalsAsync(audioPath);
 
-            // Step 3: Generate video with black background, instrumental audio and subtitles
-            string outputPath = await _service.GenerateBlackVideoWithAudioAndSubtitlesAsync(instrumentalPath, srtPath, musicTitle, artistName);
+            // Step 3: Gerar vídeo com fundo preto, áudio instrumental e legendas ASS com karaoke
+            string outputPath = await _service.GenerateBlackVideoWithAudioAndSubtitlesAsync(instrumentalPath, assPath, musicTitle, artistName);
 
-            // Clean up temporary files
+            // Limpar arquivos temporários
             System.IO.File.Delete(audioPath);
-            System.IO.File.Delete(srtPath);
+            System.IO.File.Delete(assPath);
             System.IO.File.Delete(instrumentalPath);
 
-            // Return the processed video file for download
-            var fileName = $"{Path.GetFileNameWithoutExtension(audioFile.FileName)}_karaoke.mp4";
+            var musicNormalized = TextNormalizer.NormalizeText(musicTitle);
+            var artistNormalized = TextNormalizer.NormalizeText(artistName);
+            string artistAndMusic = null;
+
+            if(string.IsNullOrEmpty(musicNormalized) && string.IsNullOrEmpty(artistNormalized))
+            {
+                artistAndMusic = Path.GetFileNameWithoutExtension(outputPath);
+            }
+            else if(string.IsNullOrEmpty(musicNormalized))
+            {
+                artistAndMusic = $"{artistNormalized}";
+            }
+            else if(string.IsNullOrEmpty(artistNormalized))
+            {
+                artistAndMusic = $"{musicNormalized}";
+            }
+            else
+            {
+                artistAndMusic = $"{artistNormalized}-{musicNormalized}";
+            }
+
+            // Retornar o vídeo processado para download
+            var fileName = $"{artistAndMusic}.mp4";
             return PhysicalFile(outputPath, "video/mp4", fileName);
         }
         catch (Exception ex)
         {
-            // Clean up any temporary files in case of error
+            // Limpar arquivos temporários em caso de erro
             if (System.IO.File.Exists(audioPath)) System.IO.File.Delete(audioPath);
-            if (srtPath != null && System.IO.File.Exists(srtPath)) System.IO.File.Delete(srtPath);
+            if (assPath != null && System.IO.File.Exists(assPath)) System.IO.File.Delete(assPath);
             if (instrumentalPath != null && System.IO.File.Exists(instrumentalPath)) System.IO.File.Delete(instrumentalPath);
 
-            // Log the error or return a more detailed error response
             Console.WriteLine($"Error processing audio: {ex.Message}");
             Console.WriteLine($"Stack trace: {ex.StackTrace}");
 
