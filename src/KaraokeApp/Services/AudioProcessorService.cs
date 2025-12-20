@@ -16,6 +16,7 @@ public class AudioProcessorService
     private readonly string _modelPath;
     private readonly int _videoWidth;
     private readonly int _videoHeight;
+    private readonly string? _backgroundImagePath;
     private readonly ILogger<AudioProcessorService> _logger;
     private readonly IConfiguration _configuration;
     private readonly string _vocalRemover;
@@ -28,6 +29,7 @@ public class AudioProcessorService
         _modelPath = configuration["Whisper:ModelPath"] ?? "WhisperModels";
         _videoWidth = int.Parse(configuration["Video:Width"] ?? "1280");
         _videoHeight = int.Parse(configuration["Video:Height"] ?? "720");
+        _backgroundImagePath = configuration["Video:BackgroundImage"];
         _logger = logger;
         _configuration = configuration;
         _vocalRemover = configuration["Audio:VocalRemover"] ?? "ffmpeg";
@@ -195,7 +197,7 @@ public class AudioProcessorService
         }
     }
 
-    public async Task<string> GenerateBlackVideoWithAudioAndSubtitlesAsync(string instrumentalAudioPath, string assPath, string? musicTitle = "", string? artistName = "")
+    public async Task<string> GenerateVideoWithAudioAndSubtitlesAsync(string instrumentalAudioPath, string assPath, string? musicTitle = "", string? artistName = "")
     {
         string outputPath = Path.ChangeExtension(instrumentalAudioPath, ".mp4").Replace("_instrumental", "_karaoke");
 
@@ -213,10 +215,28 @@ public class AudioProcessorService
 
         var titleAssPathForFilter = titleAssPath.Replace(@"\", @"\\").Replace(":", @"\:");
 
-        // Filter complex: waveform + título + legendas com karaoke
-        var filterComplex = $"[0:a]showwaves=s={_videoWidth}x{_videoHeight}:mode=line:colors=cyan:rate=25,format=yuv420p[waves];[waves]ass='{titleAssPathForFilter}'[titlevid];[titlevid]ass='{assPathForFilter}'[outv]";
+        var mediaInfo = await FFmpeg.GetMediaInfo(instrumentalAudioPath);
+        var duration = mediaInfo.Duration;
 
-        var command = $"-i \"{instrumentalAudioPath}\" -filter_complex \"{filterComplex}\" -map \"[outv]\" -map 0:a -c:v libx264 -pix_fmt yuv420p -b:v 2M -preset fast \"{outputPath}\"";
+        string command;
+        string filterComplex;
+
+        if (!string.IsNullOrEmpty(_backgroundImagePath) && File.Exists(_backgroundImagePath))
+        {
+            // Filter complex: imagem de fundo + título + legendas
+            filterComplex = $"[0:v]scale={_videoWidth}:{_videoHeight}[bg];[bg]ass='{titleAssPathForFilter}'[v_title];[v_title]ass='{assPathForFilter}'[outv]";
+            
+            // Comando FFmpeg com imagem de fundo
+            command = $"-loop 1 -i \"{_backgroundImagePath}\" -i \"{instrumentalAudioPath}\" -filter_complex \"{filterComplex}\" -map \"[outv]\" -map 1:a -c:v libx264 -pix_fmt yuv420p -b:v 2M -preset fast -shortest \"{outputPath}\"";
+        }
+        else
+        {
+            // Filter complex: fundo preto + título + legendas (fallback)
+            filterComplex = $"[0:v]ass='{titleAssPathForFilter}'[v_title];[v_title]ass='{assPathForFilter}'[outv]";
+
+            // Comando FFmpeg com fundo preto
+            command = $"-f lavfi -i color=c=black:s={_videoWidth}x{_videoHeight}:d={duration.TotalSeconds} -i \"{instrumentalAudioPath}\" -filter_complex \"{filterComplex}\" -map \"[outv]\" -map 1:a -c:v libx264 -pix_fmt yuv420p -b:v 2M -preset fast -shortest \"{outputPath}\"";
+        }
 
         _logger.LogInformation("FFmpeg command (Visual Effects): {command}", command);
 

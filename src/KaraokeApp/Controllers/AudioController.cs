@@ -50,8 +50,8 @@ public class AudioController : Controller
             // Step 2: Remover vocais para criar faixa instrumental
             instrumentalPath = await _service.RemoveVocalsAsync(audioPath);
 
-            // Step 3: Gerar vídeo com fundo preto, áudio instrumental e legendas ASS com karaoke
-            string outputPath = await _service.GenerateBlackVideoWithAudioAndSubtitlesAsync(instrumentalPath, assPath, musicTitle, artistName);
+            // Step 3: Gerar vídeo com fundo, áudio instrumental e legendas ASS com karaoke
+            string outputPath = await _service.GenerateVideoWithAudioAndSubtitlesAsync(instrumentalPath, assPath, musicTitle, artistName);
 
             // Limpar arquivos temporários
             System.IO.File.Delete(audioPath);
