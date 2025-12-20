@@ -19,6 +19,9 @@ public class AudioProcessorService
     private readonly ILogger<AudioProcessorService> _logger;
     private readonly IConfiguration _configuration;
     private readonly string _vocalRemover;
+    private readonly int _karaokeFontSize;
+    private readonly int _previewFontSize;
+    private readonly int _titleFontSize;
 
     public AudioProcessorService(IConfiguration configuration, ILogger<AudioProcessorService> logger)
     {
@@ -28,6 +31,9 @@ public class AudioProcessorService
         _logger = logger;
         _configuration = configuration;
         _vocalRemover = configuration["Audio:VocalRemover"] ?? "ffmpeg";
+        _karaokeFontSize = int.Parse(configuration["Subtitles:KaraokeFontSize"] ?? "52");
+        _previewFontSize = int.Parse(configuration["Subtitles:PreviewFontSize"] ?? "28");
+        _titleFontSize = int.Parse(configuration["Subtitles:TitleFontSize"] ?? "36");        
     }
 
     public async Task InitializeAsync()
@@ -99,14 +105,14 @@ public class AudioProcessorService
         assBuilder.AppendLine("[V4+ Styles]");
         assBuilder.AppendLine("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding");
         
-        // Estilo principal do karaoke (texto no centro-baixo)
+        // Estilo principal do karaoke (texto no centro-baixo) - USA _karaokeFontSize
         // PrimaryColour: Branco (&H00FFFFFF) - texto não cantado
         // SecondaryColour: Amarelo/Dourado (&H0000FFFF) - texto sendo cantado
         // Alignment: 2 = Centro inferior
-        assBuilder.AppendLine("Style: Karaoke,Arial,28,&H00FFFFFF,&H0000FFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,0,2,30,30,50,1");
+        assBuilder.AppendLine($"Style: Karaoke,Arial,{_karaokeFontSize},&H00FFFFFF,&H0000FFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,0,2,30,30,50,1");
         
-        // Estilo para próxima linha (preview)
-        assBuilder.AppendLine("Style: Preview,Arial,28,&H00808080,&H00808080,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,2,0,2,30,30,100,1");
+        // Estilo para próxima linha (preview) - USA _previewFontSize
+        assBuilder.AppendLine($"Style: Preview,Arial,{_previewFontSize},&H00808080,&H00808080,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,2,0,2,30,30,100,1");
         assBuilder.AppendLine();
 
         // Eventos
@@ -235,11 +241,11 @@ public class AudioProcessorService
         assBuilder.AppendLine("ScriptType: v4.00+");
         assBuilder.AppendLine();
 
-        // Estilo do título (topo, esquerda, branco, grande)
+        // Estilo do título (topo, esquerda, branco, grande) - USA _titleFontSize
         assBuilder.AppendLine("[V4+ Styles]");
         assBuilder.AppendLine("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding");
         // Alignment 7 = Topo Esquerda
-        assBuilder.AppendLine("Style: Title,Arial,28,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,0,7,50,10,50,1");
+        assBuilder.AppendLine($"Style: Title,Arial,{_titleFontSize},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,0,7,50,10,50,1");
         assBuilder.AppendLine();
 
         // Evento
