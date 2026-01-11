@@ -41,22 +41,28 @@ public class AudioController : Controller
         }
 
         string instrumentalPath = null;
-        string assPath = null; // Mudado de srtPath para assPath
+        string vocalsPath = null; // Caminho para os vocais limpos
+        string assPath = null;
+        string outputPath = null;
+
         try
         {
-            // Step 1: Gerar arquivo ASS com efeito karaoke do áudio
-            assPath = await _service.GenerateAssFromAudioAsync(audioPath, language);
+            // MUDANÇA PRINCIPAL: Separa vocais PRIMEIRO para garantir transcrição limpa
+            // Step 1: Separar vocais e instrumental
+            (instrumentalPath, vocalsPath) = await _service.RemoveVocalsAsync(audioPath);
 
-            // Step 2: Remover vocais para criar faixa instrumental
-            instrumentalPath = await _service.RemoveVocalsAsync(audioPath);
+            // Step 2: Gerar arquivo ASS usando APENAS a faixa de voz limpa
+            // Isso evita que bateria e instrumentos confundam o Whisper
+            assPath = await _service.GenerateAssFromAudioAsync(vocalsPath, language);
 
-            // Step 3: Gerar vídeo com fundo, áudio instrumental e legendas ASS com karaoke
-            string outputPath = await _service.GenerateVideoWithAudioAndSubtitlesAsync(instrumentalPath, assPath, musicTitle, artistName);
+            // Step 3: Gerar vídeo final com fundo, áudio instrumental e legendas
+            outputPath = await _service.GenerateVideoWithAudioAndSubtitlesAsync(instrumentalPath, assPath, musicTitle, artistName);
 
             // Limpar arquivos temporários
-            System.IO.File.Delete(audioPath);
-            System.IO.File.Delete(assPath);
-            System.IO.File.Delete(instrumentalPath);
+            if (System.IO.File.Exists(audioPath)) System.IO.File.Delete(audioPath);
+            if (System.IO.File.Exists(vocalsPath)) System.IO.File.Delete(vocalsPath); // Deleta a voz extraída
+            if (System.IO.File.Exists(assPath)) System.IO.File.Delete(assPath);
+            if (System.IO.File.Exists(instrumentalPath)) System.IO.File.Delete(instrumentalPath);
 
             var musicNormalized = TextNormalizer.NormalizeText(musicTitle);
             var artistNormalized = TextNormalizer.NormalizeText(artistName);
@@ -79,14 +85,14 @@ public class AudioController : Controller
                 artistAndMusic = $"{artistNormalized}-{musicNormalized}";
             }
 
-            // Retornar o vídeo processado para download
             var fileName = $"{artistAndMusic}.mp4";
             return PhysicalFile(outputPath, "video/mp4", fileName);
         }
         catch (Exception ex)
         {
-            // Limpar arquivos temporários em caso de erro
+            // Limpeza de emergência
             if (System.IO.File.Exists(audioPath)) System.IO.File.Delete(audioPath);
+            if (vocalsPath != null && System.IO.File.Exists(vocalsPath)) System.IO.File.Delete(vocalsPath);
             if (assPath != null && System.IO.File.Exists(assPath)) System.IO.File.Delete(assPath);
             if (instrumentalPath != null && System.IO.File.Exists(instrumentalPath)) System.IO.File.Delete(instrumentalPath);
 

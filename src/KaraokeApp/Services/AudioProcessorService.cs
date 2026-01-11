@@ -45,15 +45,15 @@ public class AudioProcessorService
 
     public async Task<string> GenerateAssFromAudioAsync(string audioPath, string language)
     {
-        // Converte áudio para WAV temporário para o Whisper
+        // Converte áudio para WAV temporário para o Whisper (16kHz mono)
         string wavPath = Path.ChangeExtension(Path.GetTempFileName(), ".wav");
         var command = $"-i \"{audioPath}\" -vn -acodec pcm_s16le -ar 16000 -ac 1 \"{wavPath}\"";
-        _logger.LogInformation("FFmpeg command: {command}", command);
+        _logger.LogInformation("FFmpeg command for Whisper prep: {command}", command);
         await FFmpeg.Conversions.New().AddParameter(command).Start();
 
+        // CORREÇÃO: Usar sempre o modelo Multilíngue (ggml-medium.bin)
+        // Isso evita erros ao buscar modelos '-en' que podem não existir e unifica a qualidade.
         string modelName = "ggml-medium.bin";
-        if (language == "en") modelName = "ggml-medium-en.bin";
-
         string modelFilePath = Path.Combine(_modelPath, modelName);
 
         if (!File.Exists(modelFilePath))
@@ -70,8 +70,19 @@ public class AudioProcessorService
         var segments = new List<Whisper.net.SegmentData>();
         using var whisperFactory = WhisperFactory.FromPath(modelFilePath);
 
+        // CORREÇÃO: Prompt dinâmico baseado no idioma.
+        // Isso "força" o Whisper a manter o idioma correto e evita traduções acidentais.
+        string prompt = "Lyrics of a song";
+        switch (language)
+        {
+            case "pt": prompt = "Letra de uma música, transcrição fiel."; break;
+            case "es": prompt = "Letra de una canción, transcripción fiel."; break;
+            case "en": prompt = "Lyrics of a song, accurate transcription."; break;
+        }
+
         using var processor = whisperFactory.CreateBuilder()
             .WithLanguage(language)
+            .WithPrompt(prompt)
             .WithProbabilities()
             .Build();
 
@@ -107,13 +118,10 @@ public class AudioProcessorService
         assBuilder.AppendLine("[V4+ Styles]");
         assBuilder.AppendLine("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding");
         
-        // Estilo principal do karaoke (texto no centro-baixo) - USA _karaokeFontSize
-        // PrimaryColour: Branco (&H00FFFFFF) - texto não cantado
-        // SecondaryColour: Amarelo/Dourado (&H0000FFFF) - texto sendo cantado
-        // Alignment: 2 = Centro inferior
+        // Estilo principal do karaoke
         assBuilder.AppendLine($"Style: Karaoke,Arial,{_karaokeFontSize},&H00FFFFFF,&H0000FFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,0,2,30,30,50,1");
         
-        // Estilo para próxima linha (preview) - USA _previewFontSize
+        // Estilo para próxima linha (preview)
         assBuilder.AppendLine($"Style: Preview,Arial,{_previewFontSize},&H00808080,&H00808080,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,2,0,2,30,30,100,1");
         assBuilder.AppendLine();
 
@@ -129,21 +137,26 @@ public class AudioProcessorService
             // Linha principal com efeito karaoke
             string dialogue = $"Dialogue: 0,{FormatAssTime(currentSegment.Start)},{FormatAssTime(currentSegment.End)},Karaoke,,0,0,0,,";
             
-            // Dividir texto em palavras e criar efeito karaoke
             string[] words = currentSegment.Text.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
             double totalDuration = (currentSegment.End - currentSegment.Start).TotalSeconds;
-            double timePerWord = totalDuration / words.Length;
-
-            foreach (var word in words)
+            
+            if (words.Length > 0)
             {
-                // Converter duração para centésimos de segundo
-                int duration = (int)(timePerWord * 100);
-                dialogue += $"{{\\k{duration}}}{word} ";
+                double timePerWord = totalDuration / words.Length;
+                foreach (var word in words)
+                {
+                    int duration = (int)(timePerWord * 100);
+                    dialogue += $"{{\\k{duration}}}{word} ";
+                }
+            }
+            else
+            {
+                 dialogue += currentSegment.Text;
             }
 
             assBuilder.AppendLine(dialogue.TrimEnd());
 
-            // Mostrar preview da próxima linha (estilo karaoke tradicional)
+            // Mostrar preview da próxima linha
             if (nextSegment != null)
             {
                 string preview = $"Dialogue: 0,{FormatAssTime(currentSegment.Start)},{FormatAssTime(currentSegment.End)},Preview,,0,0,0,,{nextSegment.Text.Trim()}";
@@ -154,7 +167,7 @@ public class AudioProcessorService
         await File.WriteAllTextAsync(assPath, assBuilder.ToString());
     }
 
-    public async Task<string> RemoveVocalsAsync(string inputAudioPath)
+    public async Task<(string instrumental, string vocals)> RemoveVocalsAsync(string inputAudioPath)
     {
         if (_vocalRemover == "demucs")
         {
@@ -178,22 +191,43 @@ public class AudioProcessorService
 
             var separatedPath = Path.Combine("separated", "htdemucs", Path.GetFileNameWithoutExtension(inputAudioPath));
             var noVocalsPath = Path.Combine(separatedPath, "no_vocals.wav");
+            var vocalsPath = Path.Combine(separatedPath, "vocals.wav");
 
-            if (!File.Exists(noVocalsPath)) throw new Exception("Demucs output missing.");
-
+            if (!File.Exists(noVocalsPath)) throw new Exception("Demucs output missing (no_vocals).");
+            
+            // Caminhos finais de saída
             string instrumentalPath = Path.ChangeExtension(inputAudioPath, "_instrumental.mp4");
-            var command = $"-i \"{noVocalsPath}\" -vn -c:a aac -ar 44100 \"{instrumentalPath}\"";
-            await FFmpeg.Conversions.New().AddParameter(command).Start();
+            string cleanVocalsPath = Path.ChangeExtension(inputAudioPath, "_vocals_clean.wav");
 
+            // 1. Converter Instrumental
+            var commandInst = $"-i \"{noVocalsPath}\" -vn -c:a aac -ar 44100 \"{instrumentalPath}\"";
+            await FFmpeg.Conversions.New().AddParameter(commandInst).Start();
+
+            // 2. Salvar Vocais Limpos (para usar no Whisper)
+            if (File.Exists(vocalsPath))
+            {
+                var commandVocals = $"-i \"{vocalsPath}\" -vn -acodec pcm_s16le \"{cleanVocalsPath}\"";
+                await FFmpeg.Conversions.New().AddParameter(commandVocals).Start();
+            }
+            else
+            {
+                File.Copy(inputAudioPath, cleanVocalsPath, true);
+            }
+
+            // Limpar pasta do Demucs
             Directory.Delete(separatedPath, true);
-            return instrumentalPath;
+            
+            return (instrumentalPath, cleanVocalsPath);
         }
         else
         {
+            // Fallback FFmpeg
             string instrumentalPath = Path.ChangeExtension(inputAudioPath, "_instrumental.mp4");
             var command1 = $"-i \"{inputAudioPath}\" -vn -af pan=stereo|c0=FL-0.5*FC|c1=FR-0.5*FC -c:a aac -ar 44100 \"{instrumentalPath}\"";
             await FFmpeg.Conversions.New().AddParameter(command1).Start();
-            return instrumentalPath;
+            
+            // No modo FFmpeg simples, retornamos o áudio original como "vocals"
+            return (instrumentalPath, inputAudioPath);
         }
     }
 
@@ -201,15 +235,12 @@ public class AudioProcessorService
     {
         string outputPath = Path.ChangeExtension(instrumentalAudioPath, ".mp4").Replace("_instrumental", "_karaoke");
 
-        // Tratamento do caminho do ASS para o filtro do FFmpeg (escape de caracteres)
         var assPathForFilter = assPath.Replace(@"\", @"\\").Replace(":", @"\:");
 
-        // Definir título e artista
         var title = string.IsNullOrEmpty(musicTitle?.Trim()) ? "Música" : musicTitle?.Trim();
         var artist = string.IsNullOrEmpty(artistName?.Trim()) ? "Artista desconhecido" : artistName?.Trim();
         string songInfo = $"{title} - {artist}";
 
-        // Criar arquivo ASS temporário com título da música
         string titleAssPath = Path.GetTempFileName() + ".ass";
         await CreateTitleAssFile(titleAssPath, songInfo, _videoWidth, _videoHeight);
 
@@ -223,18 +254,12 @@ public class AudioProcessorService
 
         if (!string.IsNullOrEmpty(_backgroundImagePath) && File.Exists(_backgroundImagePath))
         {
-            // Filter complex: imagem de fundo + título + legendas
             filterComplex = $"[0:v]scale={_videoWidth}:{_videoHeight}[bg];[bg]ass='{titleAssPathForFilter}'[v_title];[v_title]ass='{assPathForFilter}'[outv]";
-            
-            // Comando FFmpeg com imagem de fundo
             command = $"-loop 1 -i \"{_backgroundImagePath}\" -i \"{instrumentalAudioPath}\" -filter_complex \"{filterComplex}\" -map \"[outv]\" -map 1:a -c:v libx264 -pix_fmt yuv420p -b:v 2M -preset fast -shortest \"{outputPath}\"";
         }
         else
         {
-            // Filter complex: fundo preto + título + legendas (fallback)
             filterComplex = $"[0:v]ass='{titleAssPathForFilter}'[v_title];[v_title]ass='{assPathForFilter}'[outv]";
-
-            // Comando FFmpeg com fundo preto
             command = $"-f lavfi -i color=c=black:s={_videoWidth}x{_videoHeight}:d={duration.TotalSeconds} -i \"{instrumentalAudioPath}\" -filter_complex \"{filterComplex}\" -map \"[outv]\" -map 1:a -c:v libx264 -pix_fmt yuv420p -b:v 2M -preset fast -shortest \"{outputPath}\"";
         }
 
@@ -244,7 +269,6 @@ public class AudioProcessorService
             .AddParameter(command)
             .Start();
 
-        // Limpar arquivo temporário
         if (File.Exists(titleAssPath))
             File.Delete(titleAssPath);
 
@@ -255,20 +279,16 @@ public class AudioProcessorService
     {
         var assBuilder = new StringBuilder();
 
-        // Cabeçalho
         assBuilder.AppendLine("[Script Info]");
         assBuilder.AppendLine("Title: Song Title");
         assBuilder.AppendLine("ScriptType: v4.00+");
         assBuilder.AppendLine();
 
-        // Estilo do título (topo, esquerda, branco, grande) - USA _titleFontSize
         assBuilder.AppendLine("[V4+ Styles]");
         assBuilder.AppendLine("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding");
-        // Alignment 7 = Topo Esquerda
         assBuilder.AppendLine($"Style: Title,Arial,{_titleFontSize},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,0,7,50,10,50,1");
         assBuilder.AppendLine();
 
-        // Evento
         assBuilder.AppendLine("[Events]");
         assBuilder.AppendLine("Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text");
         assBuilder.AppendLine($"Dialogue: 0,0:00:00.00,0:00:05.00,Title,,0,0,0,,{titleText}");
@@ -278,12 +298,6 @@ public class AudioProcessorService
 
     private string FormatAssTime(TimeSpan ts)
     {
-        // Formato ASS: H:MM:SS.CC (centésimos)
         return $"{(int)ts.TotalHours}:{ts.Minutes:D2}:{ts.Seconds:D2}.{ts.Milliseconds / 10:D2}";
-    }
-
-    private string FormatTime(TimeSpan ts)
-    {
-        return ts.ToString(@"hh\:mm\:ss\,fff");
     }
 }
