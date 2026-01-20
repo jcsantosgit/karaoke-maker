@@ -32,6 +32,11 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Install fonts for FFmpeg subtitles
+RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections && \
+    apt-get update && apt-get install -y ttf-mscorefonts-installer && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install .NET 7 Runtime
 RUN curl -fsSL https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb \
     -o packages-microsoft-prod.deb \
@@ -41,9 +46,11 @@ RUN curl -fsSL https://packages.microsoft.com/config/ubuntu/22.04/packages-micro
     && rm -rf /var/lib/apt/lists/*
 
 # Install Demucs
-RUN python3 -m venv /opt/demucs-venv \
-    && /opt/demucs-venv/bin/pip install --upgrade pip \
-    && /opt/demucs-venv/bin/pip install demucs     && /opt/demucs-venv/bin/pip install torchcodec     && ln -s /opt/demucs-venv/bin/demucs /usr/local/bin/demucs
+RUN python3 -m venv /opt/demucs-venv && \
+    /opt/demucs-venv/bin/pip install --upgrade pip && \
+    /opt/demucs-venv/bin/pip install demucs && \
+    /opt/demucs-venv/bin/pip install torchcodec && \
+    ln -s /opt/demucs-venv/bin/demucs /usr/local/bin/demucs
 
 # Nginx config
 COPY nginx.conf /etc/nginx/sites-available/karaoke.conf
