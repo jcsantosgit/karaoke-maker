@@ -1,0 +1,2 @@
+# Track Whisper model binaries with Git LFS
+**/WhisperModels/*.bin filter=lfs diff=lfs merge=lfs -text
