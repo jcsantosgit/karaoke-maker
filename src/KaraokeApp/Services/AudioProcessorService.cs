@@ -47,12 +47,34 @@ public class AudioProcessorService
     {
         _logger.LogInformation("Step 2: Generating subtitles for {audioPath} in {language}", audioPath, language);
 
+        // First, verify the audio file exists and has content
+        if (!File.Exists(audioPath))
+        {
+            throw new FileNotFoundException($"Audio file not found at {audioPath}");
+        }
+
+        var fileInfo = new FileInfo(audioPath);
+        if (fileInfo.Length == 0)
+        {
+            throw new InvalidOperationException($"Audio file is empty: {audioPath}");
+        }
+
         string wavPath = Path.ChangeExtension(Path.GetTempFileName(), ".wav");
-        var conversionToWav = await FFmpeg.Conversions.New()
+
+        // Convert to WAV format that Whisper expects
+        await FFmpeg.Conversions.New()
             .AddParameter($"-i \"{audioPath}\" -vn -acodec pcm_s16le -ar 16000 -ac 1")
             .SetOutput(wavPath)
             .Start();
+
         _logger.LogInformation("Converted audio to 16kHz mono WAV for Whisper: {wavPath}", wavPath);
+
+        // Check if the converted WAV file has content
+        var wavInfo = new FileInfo(wavPath);
+        if (wavInfo.Length <= 44) // WAV header is 44 bytes, so anything smaller is essentially empty
+        {
+            _logger.LogWarning("Converted WAV file is too small ({size} bytes), transcribing anyway", wavInfo.Length);
+        }
 
         string modelName = "ggml-medium.bin";
         string modelFilePath = Path.Combine(_modelPath, modelName);
@@ -72,9 +94,9 @@ public class AudioProcessorService
 
         string prompt = language switch
         {
-            "pt" => "Letra de uma música, transcrição fiel.",
-            "es" => "Letra de una canción, transcripción fiel.",
-            _ => "Lyrics of a song, accurate transcription.",
+            "pt" => "Letra de uma música, com palavras precisas.",
+            "es" => "Letra de una canción, con palabras precisas.",
+            _ => "Lyrics of a song, with precise words.",
         };
 
         using var processor = whisperFactory.CreateBuilder()
@@ -91,17 +113,22 @@ public class AudioProcessorService
 
         if (segments.Count == 0)
         {
-            _logger.LogWarning("Whisper.net did not produce any segments for {audioPath}. The subtitle file will be empty.", audioPath);
+            _logger.LogWarning("Whisper.net did not produce any segments for {audioPath}. Creating minimal ASS file.", audioPath);
+
+            // Even if no segments were detected, create a basic ASS file structure
+            string assPath = Path.ChangeExtension(audioPath, ".ass");
+            await CreateMinimalAssFile(assPath);
+            return assPath;
         }
         else
         {
-            _logger.LogInformation("Whisper.net generated {count} segments.", segments.Count);
+            _logger.LogInformation("Whisper.net generated {count} segments for {audioPath}.", segments.Count, audioPath);
         }
 
-        string assPath = Path.ChangeExtension(audioPath, ".ass");
-        await CreateAssFileFromSegments(assPath, segments);
+        string assPathFinal = Path.ChangeExtension(audioPath, ".ass");
+        await CreateAssFileFromSegments(assPathFinal, segments);
 
-        return assPath;
+        return assPathFinal;
     }
 
     private async Task CreateAssFileFromSegments(string assPath, List<Whisper.net.SegmentData> segments)
@@ -156,7 +183,7 @@ public class AudioProcessorService
         _logger.LogInformation("ASS subtitle file created at {assPath}", assPath);
     }
 
-    public async Task<(string instrumental, string vocals)> RemoveVocalsAsync(string inputAudioPath)
+    public async Task<(string instrumental, string? vocals)> RemoveVocalsAsync(string inputAudioPath)
     {
         _logger.LogInformation("Step 1: Removing vocals from {inputAudioPath} using {_vocalRemover}", inputAudioPath, _vocalRemover);
 
@@ -210,14 +237,16 @@ public class AudioProcessorService
         }
         else
         {
-            // Fallback FFmpeg for vocal removal
+            // Fallback FFmpeg for vocal removal - using frequency filtering to suppress vocals
+            // This is not as effective as Demucs but better than nothing
             string instrumentalPath = Path.ChangeExtension(inputAudioPath, "_instrumental.aac");
             await FFmpeg.Conversions.New()
-                .AddParameter($"-i \"{inputAudioPath}\" -vn -af pan=stereo|c0=FL-0.5*FC|c1=FR-0.5*FC -c:a aac -ar 44100")
+                .AddParameter($"-i \"{inputAudioPath}\" -af \"highpass=f=300,lowpass=f=3400,pan=stereo|c0=FL-0.9*FC|c1=FR-0.9*FC\" -c:a aac -ar 44100")
                 .SetOutput(instrumentalPath)
                 .Start();
-            
-            return (instrumentalPath, inputAudioPath);
+
+            // Return instrumental and null for vocals (since we can't truly separate with this method)
+            return (instrumentalPath, null);
         }
     }
 
@@ -267,5 +296,27 @@ public class AudioProcessorService
     private string FormatAssTime(TimeSpan ts)
     {
         return $"{ts.Hours:D1}:{ts.Minutes:D2}:{ts.Seconds:D2}.{ts.Milliseconds / 10:D2}";
+    }
+
+    private async Task CreateMinimalAssFile(string assPath)
+    {
+        var assBuilder = new StringBuilder();
+        assBuilder.AppendLine("[Script Info]");
+        assBuilder.AppendLine("Title: Karaoke Video");
+        assBuilder.AppendLine("ScriptType: v4.00+");
+        assBuilder.AppendLine("WrapStyle: 0");
+        assBuilder.AppendLine("ScaledBorderAndShadow: yes");
+        assBuilder.AppendLine();
+        assBuilder.AppendLine("[V4+ Styles]");
+        assBuilder.AppendLine("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding");
+        assBuilder.AppendLine($"Style: Karaoke,{FONT_NAME},{_karaokeFontSize},&H00FFFFFF,&H0000FFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,0,2,30,30,50,1");
+        assBuilder.AppendLine($"Style: Preview,{FONT_NAME},{_previewFontSize},&H00808080,&H00808080,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,2,0,2,30,30,100,1");
+        assBuilder.AppendLine();
+        assBuilder.AppendLine("[Events]");
+        assBuilder.AppendLine("Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text");
+        // No Dialogue entries, leaving it as an empty subtitle file
+
+        await File.WriteAllTextAsync(assPath, assBuilder.ToString());
+        _logger.LogInformation("Created minimal ASS subtitle file at {assPath}", assPath);
     }
 }

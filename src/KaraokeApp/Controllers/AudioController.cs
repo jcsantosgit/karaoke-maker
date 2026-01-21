@@ -47,22 +47,21 @@ public class AudioController : Controller
 
         try
         {
-            // MUDANÇA PRINCIPAL: Separa vocais PRIMEIRO para garantir transcrição limpa
-            // Step 1: Separar vocais e instrumental
+            // Step 1: Generate ASS subtitles from the ORIGINAL audio file for best transcription accuracy
+            // Using the original mix ensures Whisper captures lyrics accurately without artifacts from vocal removal
+            assPath = await _service.GenerateAssFromAudioAsync(audioPath, language);
+
+            // Step 2: Remove vocals from the original audio to get instrumental track
             (instrumentalPath, vocalsPath) = await _service.RemoveVocalsAsync(audioPath);
 
-            // Step 2: Gerar arquivo ASS usando APENAS a faixa de voz limpa
-            // Isso evita que bateria e instrumentos confundam o Whisper
-            assPath = await _service.GenerateAssFromAudioAsync(vocalsPath, language);
-
-            // Step 3: Gerar vídeo final com fundo, áudio instrumental e legendas
+            // Step 3: Generate final video combining instrumental audio and ASS subtitles
             outputPath = await _service.GenerateVideoWithAudioAndSubtitlesAsync(instrumentalPath, assPath, musicTitle, artistName);
 
             // Limpar arquivos temporários
             if (System.IO.File.Exists(audioPath)) System.IO.File.Delete(audioPath);
-            if (System.IO.File.Exists(vocalsPath)) System.IO.File.Delete(vocalsPath); // Deleta a voz extraída
-            if (System.IO.File.Exists(assPath)) System.IO.File.Delete(assPath);
-            if (System.IO.File.Exists(instrumentalPath)) System.IO.File.Delete(instrumentalPath);
+            if (vocalsPath != null && System.IO.File.Exists(vocalsPath)) System.IO.File.Delete(vocalsPath); // Deleta a voz extraída
+            if (assPath != null && System.IO.File.Exists(assPath)) System.IO.File.Delete(assPath);
+            if (instrumentalPath != null && System.IO.File.Exists(instrumentalPath)) System.IO.File.Delete(instrumentalPath);
 
             var musicNormalized = TextNormalizer.NormalizeText(musicTitle);
             var artistNormalized = TextNormalizer.NormalizeText(artistName);

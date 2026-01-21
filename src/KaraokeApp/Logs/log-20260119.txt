@@ -1,1 +1,3 @@
 2026-01-19 21:16:29.825 -03:00 [INF] Shut down complete
+2026-01-19 22:00:19.801 -03:00 [WRN] Failed to determine the https port for redirect.
+2026-01-19 22:55:44.175 -03:00 [INF] Step 1: Removing vocals from /home/joao/Projects/karaoke-project/src/KaraokeApp/wwwroot/uploads/ed092e70-dd9d-4522-a97c-fcb0baae7b12.mp3 using demucs
