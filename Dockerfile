@@ -10,7 +10,6 @@ RUN dotnet restore "KaraokeApp.csproj"
 
 # Copy everything else and build
 COPY src/KaraokeApp/ ./
-COPY src/KaraokeApp/WhisperModels ./WhisperModels/
 RUN dotnet publish "KaraokeApp.csproj" -c Release -o /app/publish
 
 # ===============================
@@ -59,9 +58,6 @@ RUN rm -f /etc/nginx/sites-enabled/default \
 
 # Copy published app from build stage
 COPY --from=build /app/publish .
-
-# Copy Whisper models from build stage
-COPY --from=build /src/WhisperModels ./WhisperModels
 
 # Copy entrypoint script
 COPY entrypoint.sh /entrypoint.sh
