@@ -20,7 +20,9 @@ WORKDIR /var/www/karaoke-app
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install dependencies
+# -------------------------------
+# System dependencies
+# -------------------------------
 RUN apt-get update && apt-get install -y \
     nginx \
     ffmpeg \
@@ -31,12 +33,16 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install fonts for FFmpeg subtitles
+# -------------------------------
+# Fonts for FFmpeg subtitles
+# -------------------------------
 RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections && \
     apt-get update && apt-get install -y ttf-mscorefonts-installer && \
     rm -rf /var/lib/apt/lists/*
 
-# Install .NET 7 Runtime
+# -------------------------------
+# .NET 7 Runtime
+# -------------------------------
 RUN curl -fsSL https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb \
     -o packages-microsoft-prod.deb \
     && dpkg -i packages-microsoft-prod.deb \
@@ -44,22 +50,38 @@ RUN curl -fsSL https://packages.microsoft.com/config/ubuntu/22.04/packages-micro
     && apt-get install -y aspnetcore-runtime-7.0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Demucs
+# -------------------------------
+# Demucs
+# -------------------------------
 RUN python3 -m venv /opt/demucs-venv && \
     /opt/demucs-venv/bin/pip install --upgrade pip && \
-    /opt/demucs-venv/bin/pip install demucs && \
-    /opt/demucs-venv/bin/pip install torchcodec && \
+    /opt/demucs-venv/bin/pip install demucs torchcodec && \
     ln -s /opt/demucs-venv/bin/demucs /usr/local/bin/demucs
 
+# -------------------------------
+# Whisper model (FIX DO ERRO)
+# -------------------------------
+ENV WHISPER_BASE_URL=https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin
+
+RUN mkdir -p /var/www/karaoke-app/WhisperModels && \
+    curl -L $WHISPER_BASE_URL \
+        -o /var/www/karaoke-app/WhisperModels/ggml-base.bin
+
+# -------------------------------
 # Nginx config
+# -------------------------------
 COPY nginx.conf /etc/nginx/sites-available/karaoke.conf
 RUN rm -f /etc/nginx/sites-enabled/default \
     && ln -s /etc/nginx/sites-available/karaoke.conf /etc/nginx/sites-enabled/karaoke.conf
 
-# Copy published app from build stage
+# -------------------------------
+# Application files
+# -------------------------------
 COPY --from=build /app/publish .
 
-# Copy entrypoint script
+# -------------------------------
+# Entrypoint
+# -------------------------------
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
