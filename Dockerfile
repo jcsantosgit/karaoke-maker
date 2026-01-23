@@ -4,11 +4,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 
-# Copy csproj and restore as distinct layers
 COPY src/KaraokeApp/KaraokeApp.csproj ./
 RUN dotnet restore "KaraokeApp.csproj"
 
-# Copy everything else and build
 COPY src/KaraokeApp/ ./
 RUN dotnet publish "KaraokeApp.csproj" -c Release -o /app/publish
 
@@ -34,14 +32,14 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # -------------------------------
-# Fonts for FFmpeg subtitles
+# Fonts
 # -------------------------------
 RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections && \
     apt-get update && apt-get install -y ttf-mscorefonts-installer && \
     rm -rf /var/lib/apt/lists/*
 
 # -------------------------------
-# .NET 7 Runtime
+# .NET Runtime
 # -------------------------------
 RUN curl -fsSL https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb \
     -o packages-microsoft-prod.deb \
@@ -59,23 +57,26 @@ RUN python3 -m venv /opt/demucs-venv && \
     ln -s /opt/demucs-venv/bin/demucs /usr/local/bin/demucs
 
 # -------------------------------
-# Whisper model (FIX DO ERRO)
+# Whisper models (BASE + MEDIUM)
 # -------------------------------
 ENV WHISPER_BASE_URL=https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin
+ENV WHISPER_MEDIUM_URL=https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin
 
 RUN mkdir -p /var/www/karaoke-app/WhisperModels && \
     curl -L $WHISPER_BASE_URL \
-        -o /var/www/karaoke-app/WhisperModels/ggml-base.bin
+        -o /var/www/karaoke-app/WhisperModels/ggml-base.bin && \
+    curl -L $WHISPER_MEDIUM_URL \
+        -o /var/www/karaoke-app/WhisperModels/ggml-medium.bin
 
 # -------------------------------
-# Nginx config
+# Nginx
 # -------------------------------
 COPY nginx.conf /etc/nginx/sites-available/karaoke.conf
 RUN rm -f /etc/nginx/sites-enabled/default \
     && ln -s /etc/nginx/sites-available/karaoke.conf /etc/nginx/sites-enabled/karaoke.conf
 
 # -------------------------------
-# Application files
+# App
 # -------------------------------
 COPY --from=build /app/publish .
 
@@ -86,5 +87,4 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 EXPOSE 80
-
 CMD ["/entrypoint.sh"]
